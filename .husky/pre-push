@@ -1,0 +1,9 @@
+#!/bin/sh
+git fetch origin main --quiet
+
+if git rev-parse --verify origin/main >/dev/null 2>&1; then
+  npx vitest run --changed origin/main
+else
+  echo "origin/main not found — running full test suite once."
+  npm run test
+fi
