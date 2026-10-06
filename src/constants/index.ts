@@ -18,6 +18,12 @@ export const ROUTES = {
   ADMIN_ANNOUNCEMENTS: '/admin/announcements',
   ADMIN_POLICIES: '/admin/policies',
 
+  // role landing paths (target of roleDefaultRoute, doc 8-1)
+  STUDENT_HOME: '/student',
+  PARENT_HOME: '/parent',
+  TUTOR_HOME: '/tutor',
+  ADMIN_HOME: '/admin',
+
   // ── accounts-guardianship ──
   INVITE_ACTIVATION: '/invite/:token/activate',
   STUDENT_PROFILE: '/student/profile',
