@@ -64,7 +64,7 @@ export default function LoginPage() {
 
           {errors.root && <p className="text-destructive text-xs">{errors.root.message}</p>}
 
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" loading={isSubmitting}>
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
