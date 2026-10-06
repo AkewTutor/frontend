@@ -11,7 +11,7 @@ export default function DashboardLayout() {
         <p className="font-semibold text-foreground">template-react</p>
         <div className="flex items-center gap-4">
           {user && <p className="text-muted-foreground text-sm">{user.email}</p>}
-          <Button variant="outline" onClick={logout}>
+          <Button variant="secondary" onClick={logout}>
             Log out
           </Button>
         </div>
