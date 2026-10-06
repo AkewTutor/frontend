@@ -101,9 +101,8 @@ const leaf = (path: string, Page: Page): RouteObject => ({
 
 // One guard + DashboardLayout per role set (each leaf is guarded individually per
 // its feature spec; no blanket /student/* lock).
-// TODO(Phase 1, Dev A): pass roles into the guard -> <ProtectedRoute roles={roles} />
 const guarded = (roles: Role[] | 'any', children: RouteObject[]): RouteObject => ({
-  element: <ProtectedRoute />,
+  element: <ProtectedRoute roles={roles} />,
   handle: { roles },
   children: [{ element: <DashboardLayout />, children }],
 });
