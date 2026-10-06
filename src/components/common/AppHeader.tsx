@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import { ROUTES } from '@/constants';
 import { useAuth } from '@/hooks/useAuth';
+import NotificationBell from '@/components/common/NotificationBell';
 
 interface AppHeaderProps {
   menuOpen: boolean;
@@ -33,7 +34,8 @@ export default function AppHeader({ menuOpen, onMenuClick }: AppHeaderProps) {
         </div>
 
         <div className="flex items-center gap-4">
-          {user && <span className="hidden text-s text-white/85 sm:inline">{user.email}</span>}
+          <NotificationBell />
+          {user && <span className="hidden text-s text-white/85 sm:inline">{user.email}</span>}{' '}
           <button
             type="button"
             onClick={logout}
