@@ -8,6 +8,7 @@ import DashboardLayout from '@/components/layouts/DashboardLayout';
 import AuthLayout from '@/components/layouts/AuthLayout';
 import { ROUTES } from '@/constants';
 import type { Role } from '@/types';
+import PublicLayout from '@/components/layouts/PublicLayout';
 
 // ── shared / public / auth ──
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -109,9 +110,11 @@ const guarded = (roles: Role[] | 'any', children: RouteObject[]): RouteObject =>
 });
 
 const router = createBrowserRouter([
-  // Public (no auth concept) -- TODO(Phase 1, Dev B): wrap in PublicLayout
-  leaf(ROUTES.LANDING, LandingPage),
-  leaf(ROUTES.POLICY, PolicyPage),
+  // Public (no auth concept)
+  {
+    element: <PublicLayout />,
+    children: [leaf(ROUTES.LANDING, LandingPage), leaf(ROUTES.POLICY, PolicyPage)],
+  },
 
   // Guest actions
   {
