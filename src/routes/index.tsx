@@ -12,7 +12,7 @@ import type { Role } from '@/types';
 // ── shared / public / auth ──
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const PolicyPage = lazy(() => import('@/pages/PolicyPage'));
-const LoginPage = lazy(() => import('@/pages/auth/LoginPage')); // moves to @/pages/LoginPage in Phase 1
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const VerifyContactPage = lazy(() => import('@/pages/VerifyContactPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
