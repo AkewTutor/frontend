@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuthStore } from '@/store/auth.store';
 
+vi.mock('@/components/common/NotificationBell', () => ({ default: () => null }));
+
 function renderLayout() {
   return render(
     <MemoryRouter initialEntries={['/student']}>
