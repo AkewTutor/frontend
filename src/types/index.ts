@@ -290,3 +290,213 @@ export interface Message {
   body: string;
   createdAt: string;
 }
+
+// ── gamification-engagement ────────────────────────────────
+export interface XPProgress {
+  totalXP: number;
+  streak: {
+    currentStreakDays: number;
+    longestStreakDays: number;
+    lastActivityDate: string;
+  };
+  recentEntries: { amount: number; reason: string; createdAt: string }[];
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  displayName: string;
+  xp: number;
+}
+
+export interface Leaderboard {
+  grade: number;
+  period: 'WEEKLY' | 'MONTHLY';
+  rankings: LeaderboardEntry[];
+  callerRank: number;
+}
+
+export interface Badge {
+  badgeId: string;
+  name: string;
+  description: string;
+  earnedAt: string;
+}
+
+export interface AdminBadge {
+  id: string;
+  name: string;
+  category: 'STUDENT' | 'TUTOR';
+  criteriaDescription: string;
+  isActive: boolean;
+}
+
+export interface XPAdjustment {
+  id: string;
+  studentId: string;
+  amount: number;
+  reason: 'OTHER';
+  note: string;
+  createdAt: string;
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  period: 'WEEKLY' | 'MONTHLY';
+  startsAt: string;
+  endsAt: string;
+  targetValue: number;
+}
+
+export interface ChallengeProgress {
+  challengeId: string;
+  progressValue: number;
+  completedAt: string | null;
+}
+
+// ── payments-earnings (money fields are Decimal-as-string) ──
+export interface PaymentRecord {
+  id: string;
+  cohortId: string;
+  amount: string;
+  status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  chapaCheckoutUrl: string | null;
+  createdAt: string;
+}
+
+export interface PaymentPauseStatus {
+  isPaused: boolean;
+  pausedSince: string | null;
+  studentId: string;
+}
+
+export interface FormatPricing {
+  format: 'ONE_TO_ONE' | 'ONE_TO_THREE' | 'ONE_TO_FIVE';
+  pricePerStudentPerHour: string;
+  totalPerHour: string;
+  platformSharePerHour: string;
+  tutorSharePerHour: string;
+}
+
+export interface RefundCase {
+  id: string;
+  paymentId: string;
+  amount: string;
+  reason: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  approvedById: string | null;
+  approvedAt: string | null;
+  rejectedById: string | null;
+  rejectedAt: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+}
+
+export interface TutorEarningsSummary {
+  totalEarnedThisMonth: string;
+  upcomingPayoutAmount: string;
+  reducedRateSessions: { sessionId: string; reason: string; rateApplied: string }[];
+}
+
+export interface PayoutBatch {
+  id: string;
+  tutorId: string;
+  amount: string;
+  status: 'PENDING' | 'PAID';
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface PromotionCode {
+  id: string;
+  code: string;
+  discountPercent: number;
+  isActive: boolean;
+  expiresAt: string | null;
+}
+
+// ── support-trust-admin ────────────────────────────────────
+export type ComplaintCategory =
+  'SESSION_ISSUE' | 'TUTOR_CONDUCT' | 'PAYMENT_ISSUE' | 'MESSAGE_ISSUE' | 'OTHER';
+export type ComplaintStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
+export type ResolutionAction = 'NO_ACTION' | 'WARNING_ISSUED' | 'REFUND_ISSUED' | 'TUTOR_SUSPENDED';
+
+export interface ComplaintSummary {
+  id: string;
+  category: ComplaintCategory;
+  status: ComplaintStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ComplaintDetail extends ComplaintSummary {
+  description: string;
+  resolutionAction: ResolutionAction | null;
+}
+
+export interface AdminComplaintDetail extends ComplaintDetail {
+  reporterId: string;
+  reporterRole: 'STUDENT' | 'PARENT' | 'TUTOR';
+  relatedCohortId: string | null;
+  relatedSessionId: string | null;
+  relatedPaymentId: string | null;
+  relatedThreadId: string | null;
+  resolutionNotes: string | null;
+  resolvedById: string | null;
+}
+
+export interface SupportContact {
+  phone: string;
+  telegramHandle: string;
+  hours: string;
+}
+
+export interface PlatformHealth {
+  openDisputes: number;
+  overdueMatchApprovals: number;
+  recordingComplianceEscalations: number;
+  pendingPayoutBatches: number;
+  generatedAt: string;
+}
+
+export type ActivityEventType =
+  'BOOKING' | 'PAYMENT' | 'DISPUTE' | 'TUTOR_VERIFICATION' | 'REFUND' | 'PAYOUT';
+
+export interface ActivityEvent {
+  id: string;
+  eventType: ActivityEventType;
+  summary: string;
+  relatedEntityType: string; // e.g. 'ComplaintReport'
+  relatedEntityId: string;
+  occurredAt: string; // ISO
+}
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface ActivityHistoryPage {
+  events: ActivityEvent[];
+  pagination: Pagination;
+}
+
+export interface TutorPerformanceRow {
+  tutorId: string;
+  fullName: string;
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  uniqueStudentsTaught: number;
+  activeCohortCount: number;
+  completedSessionCount: number;
+  tutorCausedMissCount: number;
+  badgeCount: number;
+  complaintCount: number;
+  createdAt: string;
+}
+
+export interface TutorPerformancePage {
+  tutors: TutorPerformanceRow[];
+  pagination: Pagination;
+}
