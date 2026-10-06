@@ -2,7 +2,7 @@
 
 > **A production-ready React SPA starter built for serious applications.**
 > Modern tooling, scalable architecture, and sensible defaults—so you can focus on building features instead of configuring infrastructure.
-
+ 
 ---
 
 ## ✨ Features
