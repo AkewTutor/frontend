@@ -21,7 +21,10 @@ const FEATURES = [
 export default function LandingPage() {
   return (
     <>
-      <section className="bg-linear-to-br from-hero-from via-hero-via to-hero-to pt-32 pb-40 text-white">
+      <section
+        data-surface="dark"
+        className="bg-linear-to-br from-hero-from via-hero-via to-hero-to pt-32 pb-40 text-white"
+      >
         <div className="mx-auto grid max-w-site items-center gap-space-lg px-space-gutter md:grid-cols-2">
           <div className="flex flex-col items-start gap-space-md">
             <p className="text-s font-semibold tracking-wide text-accent uppercase">

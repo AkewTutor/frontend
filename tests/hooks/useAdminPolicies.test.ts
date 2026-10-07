@@ -23,7 +23,7 @@ beforeEach(() => {
 });
 
 describe('usePublishPolicy', () => {
-  it('sends exactly { type, content } to POST /admin/policies', async () => {
+  it('sends { content } to POST /policies/:type (type goes in the path, not the body)', async () => {
     mockedApi.post.mockResolvedValue({
       data: { type: 'REFUND', version: 4, publishedAt: '2026-10-06T10:00:00Z' },
     });
@@ -34,8 +34,7 @@ describe('usePublishPolicy', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedApi.post).toHaveBeenCalledTimes(1);
-    expect(mockedApi.post).toHaveBeenCalledWith('/admin/policies', {
-      type: 'REFUND',
+    expect(mockedApi.post).toHaveBeenCalledWith('/policies/REFUND', {
       content: '# x',
     });
     expect(result.current.data?.version).toBe(4);

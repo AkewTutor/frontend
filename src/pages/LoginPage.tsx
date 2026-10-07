@@ -1,13 +1,14 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useLogin } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { roleDefaultRoute } from '@/lib/roleDefaultRoute';
+import { ROUTES } from '@/constants';
 
 const loginSchema = z.object({
   identifier: z.string().min(1, 'Identifier is required'),
@@ -47,6 +48,17 @@ export default function LoginPage() {
 
         navigate(target, { replace: true });
       },
+      onError: (error) => {
+        // 403 = correct password but contact not verified yet.
+        // The backend returns the user id in errors[0]; send them to verification.
+        if (error.response?.status === 403) {
+          const body = error.response.data as { errors?: string[] };
+          const userId = body?.errors?.[0];
+          if (userId) {
+            navigate(`${ROUTES.VERIFY_CONTACT}?userId=${encodeURIComponent(userId)}`);
+          }
+        }
+      },
     });
   };
 
@@ -78,12 +90,21 @@ export default function LoginPage() {
                 {errors.password.message}
               </p>
             )}
+            <div className="text-right">
+              <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs text-primary hover:underline">
+                Forgot password?
+              </Link>
+            </div>
           </div>
 
-          {login.isError && login.error?.response?.status === 401 && (
+          {login.isError && login.error?.response?.status !== 403 && (
             <div className="bg-destructive/10 p-3 rounded-md" role="alert">
               <p className="text-destructive text-sm font-medium">
-                Invalid email/phone or password
+                {login.error?.response?.status === 401
+                  ? 'Invalid email/phone or password'
+                  : login.error?.response?.status === 429
+                    ? 'Too many attempts. Please wait a few minutes and try again.'
+                    : 'Something went wrong. Please try again.'}
               </p>
             </div>
           )}
@@ -92,6 +113,21 @@ export default function LoginPage() {
             Sign in
           </Button>
         </form>
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          New here? Register as a{' '}
+          <Link to={ROUTES.REGISTER_STUDENT} className="text-primary hover:underline">
+            student
+          </Link>
+          ,{' '}
+          <Link to={ROUTES.REGISTER_PARENT} className="text-primary hover:underline">
+            parent
+          </Link>{' '}
+          or{' '}
+          <Link to={ROUTES.REGISTER_TUTOR} className="text-primary hover:underline">
+            tutor
+          </Link>
+          .
+        </p>
       </CardContent>
     </Card>
   );

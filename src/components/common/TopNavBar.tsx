@@ -5,6 +5,8 @@ import { faBars, faGraduationCap, faUser, faXmark } from '@fortawesome/free-soli
 
 import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth.store';
+import { roleDefaultRoute } from '@/lib/roleDefaultRoute';
 
 const policyPath = (type: string) => ROUTES.POLICY.replace(':type', type);
 
@@ -13,6 +15,7 @@ const NAV_LINKS = [
   { label: 'Safety', to: policyPath('SAFETY') },
   { label: 'Privacy', to: policyPath('PRIVACY') },
   { label: 'Terms', to: policyPath('TERMS') },
+  { label: 'Become a tutor', to: ROUTES.REGISTER_TUTOR },
 ];
 
 interface TopNavBarProps {
@@ -23,6 +26,11 @@ interface TopNavBarProps {
 export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const token = useAuthStore((s) => s.token);
+  const authed = !!token && !!user;
+  const authTo = authed ? roleDefaultRoute(user.role) : ROUTES.LOGIN;
+  const authLabel = authed ? 'Dashboard' : 'Log In';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -80,10 +88,10 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
 
         <div className="flex items-center gap-3">
           <Link
-            to={ROUTES.LOGIN}
+            to={authTo}
             className="hidden items-center gap-3 rounded-pill bg-dark py-1 pr-1 pl-4 text-s font-semibold text-white transition-colors hover:bg-black md:inline-flex"
           >
-            Log In
+            {authLabel}
             <span className="grid size-[38px] place-items-center rounded-full bg-accent text-accent-foreground">
               <FontAwesomeIcon icon={faUser} aria-hidden="true" />
             </span>
@@ -116,7 +124,7 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
             >
               <FontAwesomeIcon icon={faXmark} />
             </button>
-            {[...NAV_LINKS, { label: 'Log in', to: ROUTES.LOGIN }].map(({ label, to }) => (
+            {[...NAV_LINKS, { label: authLabel, to: authTo }].map(({ label, to }) => (
               <NavLink
                 key={to}
                 to={to}
