@@ -162,6 +162,18 @@ export interface TutorSearchResult {
   pricePerStudentPerHour: string;
 }
 
+export interface TutorProfileView {
+  tutorId: string;
+  name: string;
+  profilePictureUrl: string | null;
+  verificationStatus: string;
+  educationInstitution: string;
+  degree?: string;
+  subjectsAndGrades: { subjectName: string; grades: string }[];
+  uniqueStudentsTaught: number;
+  availableSlots: { startTime: string; endTime: string }[];
+}
+
 export interface MatchingQueueItem {
   cohortId: string;
   path: 'PATH_A' | 'PATH_B' | 'PATH_C';
