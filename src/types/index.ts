@@ -575,3 +575,19 @@ export interface AdminPeopleResponse {
   limit: number;
   total: number;
 }
+// ── admin tutor verification (API 02 GET /admin/tutors/pending) ──
+export interface PendingTutor {
+  id: string;
+  userId: string;
+  experienceDescription: string | null;
+  educationInstitution: string | null;
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  createdAt: string;
+}
+
+export interface PendingTutorsResponse {
+  tutors: PendingTutor[];
+  page: number;
+  limit: number;
+  total: number;
+}
