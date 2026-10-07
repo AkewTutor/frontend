@@ -558,3 +558,19 @@ export interface TutorPerformancePage {
   tutors: TutorPerformanceRow[];
   pagination: Pagination;
 }
+
+// ── admin people (covers Dev A's useUsers; API 02 GET /admin/people) ──
+export interface AdminUser {
+  id: string;
+  role: Role;
+  email: string | null;
+  phone: string | null;
+  createdAt: string;
+}
+
+export interface AdminPeopleResponse {
+  users: AdminUser[];
+  page: number;
+  limit: number;
+  total: number;
+}
