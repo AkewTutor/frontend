@@ -1,9 +1,7 @@
 export const ROUTES = {
-  // ── template (removed in Phase 1) ──
+  // HOME stays until useAuth/PublicRoute use roleDefaultRoute (Dev A, Phase 1), then delete
   HOME: '/',
   LOGIN: '/login',
-  REGISTER: '/register',
-  DASHBOARD: '/dashboard',
 
   // ── shared-config ──
   LANDING: '/',
@@ -88,10 +86,6 @@ export const ROUTES = {
 } as const;
 
 export const QUERY_KEYS = {
-  // ── template (removed in Phase 1) ──
-  USERS: 'users',
-  PRODUCTS: 'products',
-
   // ── shared-config ──
   NOTIFICATIONS: 'notifications',
   POLICY: 'policy',
