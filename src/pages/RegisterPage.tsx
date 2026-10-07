@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useRegister, type RegisterRole } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,10 +136,29 @@ export default function RegisterPage({ mode: modeProp }: { mode?: RegisterRole }
             </p>
           )}
 
+          {registerMut.isError && registerMut.error?.response?.status !== 409 && (
+            <div className="bg-destructive/10 p-3 rounded-md" role="alert">
+              <p className="text-destructive text-sm font-medium">
+                {registerMut.error?.response?.status === 400
+                  ? ((registerMut.error.response.data as { message?: string })?.message ??
+                    'Please check your details and try again.')
+                  : registerMut.error?.response?.status === 429
+                    ? 'Too many attempts. Please wait a few minutes and try again.'
+                    : 'Something went wrong. Please try again.'}
+              </p>
+            </div>
+          )}
+
           <Button type="submit" loading={registerMut.isPending}>
             Register
           </Button>
         </form>
+        <p className="mt-4 text-center text-sm text-muted-foreground">
+          Already have an account?{' '}
+          <Link to={ROUTES.LOGIN} className="text-primary hover:underline">
+            Log in
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

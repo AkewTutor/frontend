@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useResetPassword } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,19 +9,24 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { ROUTES } from '@/constants';
 
-const schema = z.object({
-  code: z.string().min(1, 'Code is required'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
-});
+const schema = z
+  .object({
+    identifier: z.string().min(1, 'Email or phone is required'),
+    code: z.string().min(1, 'Code is required'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((v) => v.newPassword === v.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'Passwords do not match',
+  });
 
 type FormValues = z.infer<typeof schema>;
 
 export default function ResetPasswordPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const userId = searchParams.get('userId');
-  const codeParam = searchParams.get('code') || '';
-
+  const location = useLocation();
+  const state = location.state as { identifier?: string; sent?: boolean } | null;
   const resetMut = useResetPassword();
 
   const {
@@ -31,29 +36,12 @@ export default function ResetPasswordPage() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      code: codeParam,
-    },
+    defaultValues: { identifier: state?.identifier ?? '' },
   });
-
-  if (!userId) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm">
-            This reset link is no longer valid, request a new one.{' '}
-            <Link to={ROUTES.FORGOT_PASSWORD} className="text-primary hover:underline">
-              Go to Forgot Password
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const onSubmit = (data: FormValues) => {
     resetMut.mutate(
-      { userId, code: data.code, newPassword: data.newPassword },
+      { identifier: data.identifier.trim(), code: data.code.trim(), newPassword: data.newPassword },
       {
         onSuccess: () => {
           navigate(ROUTES.LOGIN);
@@ -61,6 +49,10 @@ export default function ResetPasswordPage() {
         onError: (error) => {
           if (error.response?.status === 400) {
             setError('code', { message: 'Invalid or expired code' });
+          } else if (error.response?.status === 429) {
+            setError('root', { message: 'Too many attempts. Please wait and try again.' });
+          } else {
+            setError('root', { message: 'Something went wrong. Please try again.' });
           }
         },
       }
@@ -71,7 +63,29 @@ export default function ResetPasswordPage() {
     <Card>
       <CardContent className="p-6">
         <h1 className="text-lg font-semibold mb-4 text-foreground">Reset Password</h1>
+        {state?.sent && (
+          <div className="bg-primary/10 p-3 rounded-md mb-4" role="status">
+            <p className="text-primary text-sm font-medium">
+              If an account exists, a reset code has been sent.
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <div className="space-y-1">
+            <Label htmlFor="identifier">Email or Phone</Label>
+            <Input
+              id="identifier"
+              type="text"
+              placeholder="Email or Phone"
+              {...register('identifier')}
+            />
+            {errors.identifier && (
+              <p className="text-destructive text-xs" role="alert">
+                {errors.identifier.message}
+              </p>
+            )}
+          </div>
+
           <div className="space-y-1">
             <Label htmlFor="code">Reset Code</Label>
             <Input id="code" type="text" placeholder="Code" {...register('code')} />
@@ -97,9 +111,36 @@ export default function ResetPasswordPage() {
             )}
           </div>
 
+          <div className="space-y-1">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Confirm Password"
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p className="text-destructive text-xs" role="alert">
+                {errors.confirmPassword.message}
+              </p>
+            )}
+          </div>
+
+          {errors.root && (
+            <p className="text-destructive text-sm" role="alert">
+              {errors.root.message}
+            </p>
+          )}
+
           <Button type="submit" loading={resetMut.isPending}>
             Reset Password
           </Button>
+          <p className="text-sm text-center">
+            Didn&apos;t get a code?{' '}
+            <Link to={ROUTES.FORGOT_PASSWORD} className="text-primary hover:underline">
+              Send a new one
+            </Link>
+          </p>
         </form>
       </CardContent>
     </Card>

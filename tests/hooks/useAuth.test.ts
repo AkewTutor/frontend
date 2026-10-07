@@ -248,7 +248,7 @@ describe('useForgotPassword / useResetPassword', () => {
   });
 
   it('reset-password posts the body and propagates an invalid/expired code error', async () => {
-    const body = { userId: 'u1', code: '000000', newPassword: 'newpassword1' };
+    const body = { identifier: 'me@x.z', code: '000000', newPassword: 'newpassword1' };
     post.mockRejectedValue(httpError(410, 'expired'));
     const { result } = renderHook(() => useResetPassword(), { wrapper: wrapper() });
 

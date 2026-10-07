@@ -75,7 +75,11 @@ export function useForgotPassword() {
 }
 
 export function useResetPassword() {
-  return useMutation<unknown, AxiosError, { userId: string; code: string; newPassword: string }>({
+  return useMutation<
+    unknown,
+    AxiosError,
+    { identifier: string; code: string; newPassword: string }
+  >({
     mutationFn: (body) => api.post('/auth/reset-password', body).then((r) => r.data),
   });
 }

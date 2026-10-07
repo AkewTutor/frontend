@@ -130,6 +130,7 @@ export default function AnnouncementsPage() {
             {announcements.map((a) => (
               <li key={a.id} className="p-3">
                 <span className="block font-semibold">{a.title}</span>
+                {a.body && <span className="block text-s whitespace-pre-line">{a.body}</span>}
                 <span className="block text-xs opacity-70">
                   {a.audienceRoles.join(', ')} · {new Date(a.createdAt).toLocaleString()}
                 </span>

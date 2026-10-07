@@ -6,14 +6,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/constants';
 import { useMarkRead, useMyNotifications } from '@/hooks/useNotifications';
 import { notificationTypeToRoute } from '@/lib/notificationTypeToRoute';
+import { notificationText } from '@/lib/notificationText';
 
 const MAX_ITEMS = 5;
 const POLL_MS = 30_000;
-
-function labelFor(type: string): string {
-  const text = type.replace(/_/g, ' ').toLowerCase();
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -76,20 +72,24 @@ export default function NotificationBell() {
           {items.length === 0 ? (
             <p className="px-3 py-2 text-s">No unread notifications</p>
           ) : (
-            items.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                role="menuitem"
-                onClick={() => handleSelect(n.id, n.type)}
-                className="block w-full rounded px-3 py-2 text-left text-s hover:bg-black/5"
-              >
-                <span className="block font-semibold">{labelFor(n.type)}</span>
-                <span className="block text-xs opacity-70">
-                  {new Date(n.createdAt).toLocaleString()}
-                </span>
-              </button>
-            ))
+            items.map((n) => {
+              const { title, body } = notificationText(n);
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => handleSelect(n.id, n.type)}
+                  className="block w-full rounded px-3 py-2 text-left text-s hover:bg-black/5"
+                >
+                  <span className="block font-semibold">{title}</span>
+                  {body && <span className="block text-xs line-clamp-2">{body}</span>}
+                  <span className="block text-xs opacity-70">
+                    {new Date(n.createdAt).toLocaleString()}
+                  </span>
+                </button>
+              );
+            })
           )}
           <Link
             to={ROUTES.NOTIFICATIONS}
