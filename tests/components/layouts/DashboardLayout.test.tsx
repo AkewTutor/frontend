@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import DashboardLayout from '@/components/layouts/DashboardLayout';
 import { useAuthStore } from '@/store/auth.store';
+import type { Role } from '@/types';
 
 vi.mock('@/components/common/NotificationBell', () => ({ default: () => null }));
 
@@ -20,10 +21,10 @@ function renderLayout() {
   );
 }
 
-function signIn(role: string) {
+function signIn(role: Role) {
   useAuthStore.setState({
     token: 't',
-    user: { id: '1', email: 'a@b.co', role, createdAt: '' },
+    user: { id: '1', email: 'a@b.co', phone: null, role },
   });
 }
 
@@ -45,7 +46,7 @@ describe('DashboardLayout', () => {
     ['TUTOR', 'Tutor navigation'],
     ['ADMIN', 'Admin navigation'],
   ])('maps %s to its sidebar', (role, name) => {
-    signIn(role);
+    signIn(role as Role);
     renderLayout();
     expect(screen.getByRole('navigation', { name })).toBeInTheDocument();
   });
@@ -81,7 +82,7 @@ describe('DashboardLayout', () => {
 
   it('throws in dev for a role with no sidebar', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    signIn('GHOST');
+    signIn('GHOST' as Role);
     expect(() => renderLayout()).toThrow(/no sidebar for role/);
     spy.mockRestore();
   });
