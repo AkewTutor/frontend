@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AnnouncementsPage from '@/pages/admin/AnnouncementsPage';
 import { useAuthStore } from '@/store/auth.store';
+import type { Role } from '@/types';
 
 const { mutate, useAnnouncementsMock } = vi.hoisted(() => ({
   mutate: vi.fn(),
@@ -26,10 +27,10 @@ function renderPage() {
   );
 }
 
-function signIn(role: string) {
+function signIn(role: Role) {
   useAuthStore.setState({
     token: 't',
-    user: { id: '1', email: 'a@b.co', role, createdAt: '' },
+    user: { id: '1', email: 'a@b.co', phone: null, role },
   });
 }
 
