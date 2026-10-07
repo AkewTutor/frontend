@@ -154,6 +154,45 @@ export interface MatchRequest {
   zeroMatchSince: string | null;
 }
 
+export interface TutorSearchResult {
+  tutorId: string;
+  name: string;
+  profilePictureUrl: string | null;
+  verificationStatus: string;
+  pricePerStudentPerHour: string;
+}
+
+export interface TutorProfileView {
+  tutorId: string;
+  name: string;
+  profilePictureUrl: string | null;
+  verificationStatus: string;
+  educationInstitution: string;
+  degree?: string;
+  subjectsAndGrades: { subjectName: string; grades: string }[];
+  uniqueStudentsTaught: number;
+  availableSlots: { startTime: string; endTime: string }[];
+}
+
+export interface MatchingQueueItem {
+  cohortId: string;
+  path: 'PATH_A' | 'PATH_B' | 'PATH_C';
+  format: CohortFormat;
+  tutorId: string;
+  studentIds: string[];
+  createdAt: string;
+  isOverdue: boolean;
+  adminOverdueNotifiedAt: string | null;
+  studentDelayNotifiedAt: string | null;
+}
+
+export interface MatchingQueueResponse {
+  queue: MatchingQueueItem[]; // API doc key; 8-3 says `items` (unresolved)
+  page: number;
+  limit: number;
+  total: number;
+}
+
 export interface Cohort {
   cohortId: string;
   format: CohortFormat;
@@ -290,6 +329,24 @@ export interface Message {
   senderRole: 'STUDENT' | 'PARENT' | 'TUTOR';
   body: string;
   createdAt: string;
+}
+
+export interface MessagesResponse {
+  messages: Message[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+// Admin review: the API returns no senderRole here.
+export interface AdminThreadView {
+  id: string;
+  cohortId: string;
+  status: MessageThread['status'];
+  messages: { id: string; senderId: string; body: string; createdAt: string }[];
+  page: number;
+  limit: number;
+  total: number;
 }
 
 // ── gamification-engagement ────────────────────────────────
