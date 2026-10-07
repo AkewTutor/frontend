@@ -9,12 +9,12 @@ export interface PublishPolicyBody {
   content: string;
 }
 
-// POST /admin/policies (UC-85). Creates a NEW immutable version; never edits in place.
+// POST /policies/:type (UC-85, admin only; type is in the path, body is { content }). Creates a NEW immutable version; never edits in place.
 export function usePublishPolicy() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: PublishPolicyBody) =>
-      api.post<PolicyPublishResult>('/admin/policies', body).then((r) => r.data),
+    mutationFn: ({ type, content }: PublishPolicyBody) =>
+      api.post<PolicyPublishResult>(`/policies/${type}`, { content }).then((r) => r.data),
     onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: [QUERY_KEYS.POLICY, vars.type] }),
   });
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { useVerifyContact, useResendVerification } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +59,10 @@ export default function VerifyContactPage() {
         onError: (error) => {
           if (error.response?.status === 400) {
             setError('code', { message: 'Invalid or expired code' });
+          } else if (error.response?.status === 429) {
+            toast.error('Too many attempts. Please wait a few minutes and try again.');
+          } else {
+            toast.error('Something went wrong. Please try again.');
           }
         },
       }
@@ -70,6 +74,14 @@ export default function VerifyContactPage() {
     setResendDisabled(true);
     resendMut.mutate(userId, {
       onSuccess: () => toast.success('Verification code sent'),
+      onError: (error) => {
+        if (error.response?.status !== 429) setResendDisabled(false);
+        toast.error(
+          error.response?.status === 429
+            ? 'Too many requests. Please wait before asking for another code.'
+            : 'Could not send the code. Please try again.'
+        );
+      },
     });
   };
 
@@ -78,7 +90,17 @@ export default function VerifyContactPage() {
       <Card>
         <CardContent className="p-6">
           <p className="text-destructive text-sm" role="alert">
-            User ID is missing.
+            We couldn't find your verification session.
+          </p>
+          <p className="mt-2 text-sm">
+            <Link to={ROUTES.LOGIN} className="text-primary hover:underline">
+              Log in
+            </Link>{' '}
+            to get a new code, or{' '}
+            <Link to={ROUTES.REGISTER_STUDENT} className="text-primary hover:underline">
+              register
+            </Link>
+            .
           </p>
         </CardContent>
       </Card>

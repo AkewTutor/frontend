@@ -18,16 +18,19 @@ function LocationDisplay() {
   return <div data-testid="location">{location.pathname}</div>;
 }
 
-function TestSetup({ initialEntry }: { initialEntry: string }) {
+function TestSetup({ identifier }: { identifier?: string }) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
+  const entry = identifier
+    ? { pathname: ROUTES.RESET_PASSWORD, state: { identifier, sent: true } }
+    : ROUTES.RESET_PASSWORD;
 
   return (
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[initialEntry]}>
+      <MemoryRouter initialEntries={[entry]}>
         <Routes>
-          <Route path="*" element={<ResetPasswordPage />} />
+          <Route path={ROUTES.RESET_PASSWORD} element={<ResetPasswordPage />} />
           <Route path={ROUTES.LOGIN} element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>
@@ -45,52 +48,79 @@ function httpError(status: number) {
   });
 }
 
+async function fill(
+  user: ReturnType<typeof userEvent.setup>,
+  password = 'new-secret-123',
+  confirm = password
+) {
+  await user.type(screen.getByLabelText(/reset code/i), '123456');
+  await user.type(screen.getByLabelText(/^new password/i), password);
+  await user.type(screen.getByLabelText(/confirm password/i), confirm);
+  await user.click(screen.getByRole('button', { name: /reset password/i }));
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe('ResetPasswordPage', () => {
-  it('renders missing userId message', () => {
-    render(<TestSetup initialEntry="/reset-password?code=123" />);
-    expect(screen.getByText(/this reset link is no longer valid/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /go to forgot password/i })).toBeInTheDocument();
+  it('prefills the identifier from router state and shows the sent notice', () => {
+    render(<TestSetup identifier="me@test.com" />);
+    expect(screen.getByLabelText(/email or phone/i)).toHaveValue('me@test.com');
+    expect(screen.getByText(/a reset code has been sent/i)).toBeInTheDocument();
   });
 
-  it('reads userId and code from searchParams and pre-fills code', async () => {
+  it('works without router state: identifier can be typed', async () => {
     const user = userEvent.setup();
     post.mockResolvedValue({ data: {} });
-    render(<TestSetup initialEntry="/reset-password?userId=u1&code=123456" />);
+    render(<TestSetup />);
 
-    expect(screen.getByLabelText(/reset code/i)).toHaveValue('123456');
-
-    await user.type(screen.getByLabelText(/new password/i), 'new-secret-123');
-    await user.click(screen.getByRole('button', { name: /reset password/i }));
+    await user.type(screen.getByLabelText(/email or phone/i), 'me@test.com');
+    await fill(user);
 
     expect(post).toHaveBeenCalledWith('/auth/reset-password', {
-      userId: 'u1',
+      identifier: 'me@test.com',
       code: '123456',
       newPassword: 'new-secret-123',
     });
   });
 
+  it('blocks submit when passwords do not match', async () => {
+    const user = userEvent.setup();
+    render(<TestSetup identifier="me@test.com" />);
+
+    await fill(user, 'new-secret-123', 'different-123');
+
+    expect(await screen.findByText('Passwords do not match')).toBeInTheDocument();
+    expect(post).not.toHaveBeenCalled();
+  });
+
   it('400 error sets field-level error on code', async () => {
     const user = userEvent.setup();
     post.mockRejectedValue(httpError(400));
-    render(<TestSetup initialEntry="/reset-password?userId=u1&code=123456" />);
+    render(<TestSetup identifier="me@test.com" />);
 
-    await user.type(screen.getByLabelText(/new password/i), 'new-secret-123');
-    await user.click(screen.getByRole('button', { name: /reset password/i }));
+    await fill(user);
 
     expect(await screen.findByText('Invalid or expired code')).toBeInTheDocument();
+  });
+
+  it('429 shows a rate-limit message', async () => {
+    const user = userEvent.setup();
+    post.mockRejectedValue(httpError(429));
+    render(<TestSetup identifier="me@test.com" />);
+
+    await fill(user);
+
+    expect(await screen.findByText(/too many attempts/i)).toBeInTheDocument();
   });
 
   it('navigates to login on success', async () => {
     const user = userEvent.setup();
     post.mockResolvedValue({ data: {} });
-    render(<TestSetup initialEntry="/reset-password?userId=u1&code=123456" />);
+    render(<TestSetup identifier="me@test.com" />);
 
-    await user.type(screen.getByLabelText(/new password/i), 'new-secret-123');
-    await user.click(screen.getByRole('button', { name: /reset password/i }));
+    await fill(user);
 
     await waitFor(() => {
       expect(screen.getByTestId('location')).toHaveTextContent(ROUTES.LOGIN);

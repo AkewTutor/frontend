@@ -3,11 +3,7 @@ import { useState } from 'react';
 import EmptyState from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
 import { useMarkRead, useMyNotifications } from '@/hooks/useNotifications';
-
-function labelFor(type: string): string {
-  const text = type.replace(/_/g, ' ').toLowerCase();
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
+import { notificationText } from '@/lib/notificationText';
 
 export default function NotificationsPage() {
   const [unreadOnly, setUnreadOnly] = useState(false);
@@ -48,6 +44,7 @@ export default function NotificationsPage() {
         <ul className="divide-y rounded-md border">
           {notifications.map((n) => {
             const unread = n.readAt === null;
+            const { title, body } = notificationText(n);
             const content = (
               <>
                 <span className="block font-semibold">
@@ -56,8 +53,9 @@ export default function NotificationsPage() {
                       ●
                     </span>
                   )}
-                  {labelFor(n.type)}
+                  {title}
                 </span>
+                {body && <span className="block text-s whitespace-pre-line">{body}</span>}
                 <span className="block text-xs opacity-70">
                   {new Date(n.createdAt).toLocaleString()}
                 </span>

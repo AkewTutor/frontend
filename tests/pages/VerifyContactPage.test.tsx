@@ -143,6 +143,6 @@ describe('VerifyContactPage', () => {
 
   it('shows missing user id message', () => {
     render(<TestSetup initialEntry="/verify-contact" />);
-    expect(screen.getByText('User ID is missing.')).toBeInTheDocument();
+    expect(screen.getByText("We couldn't find your verification session.")).toBeInTheDocument();
   });
 });

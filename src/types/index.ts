@@ -78,6 +78,7 @@ export interface PolicyPublishResult {
 export interface Announcement {
   id: string;
   title: string;
+  body?: string;
   audienceRoles: Role[];
   createdAt: string;
 }
