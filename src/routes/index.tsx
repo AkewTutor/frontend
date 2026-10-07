@@ -12,7 +12,7 @@ import type { Role } from '@/types';
 // ── shared / public / auth ──
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const PolicyPage = lazy(() => import('@/pages/PolicyPage'));
-const LoginPage = lazy(() => import('@/pages/auth/LoginPage')); // moves to @/pages/LoginPage in Phase 1
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const VerifyContactPage = lazy(() => import('@/pages/VerifyContactPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
@@ -101,9 +101,8 @@ const leaf = (path: string, Page: Page): RouteObject => ({
 
 // One guard + DashboardLayout per role set (each leaf is guarded individually per
 // its feature spec; no blanket /student/* lock).
-// TODO(Phase 1, Dev A): pass roles into the guard -> <ProtectedRoute roles={roles} />
 const guarded = (roles: Role[] | 'any', children: RouteObject[]): RouteObject => ({
-  element: <ProtectedRoute />,
+  element: <ProtectedRoute roles={roles} />,
   handle: { roles },
   children: [{ element: <DashboardLayout />, children }],
 });
