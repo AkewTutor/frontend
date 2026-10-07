@@ -3,8 +3,13 @@ import type { AxiosError } from 'axios';
 
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
-import type { CohortFormat, MatchRequest, TutorRecommendation, TutorSearchResult } from '@/types';
-
+import type {
+  CohortFormat,
+  MatchRequest,
+  TutorProfileView,
+  TutorRecommendation,
+  TutorSearchResult,
+} from '@/types';
 export interface TutorSearchFiltersValue {
   subjectId?: string;
   grade?: number;
@@ -42,10 +47,12 @@ export function useRecommendations(studentId?: string) {
 
 // GET /matching/tutors/:tutorId (1-to-1 full profile; response untyped in the spec).
 export function useTutorFullProfile(tutorId: string) {
-  return useQuery({
+  return useQuery<TutorProfileView, AxiosError>({
     queryKey: [QUERY_KEYS.TUTOR_PROFILE_VIEW, tutorId],
-    queryFn: () => api.get(`/matching/tutors/${tutorId}`).then((r) => r.data),
+    queryFn: () => api.get<TutorProfileView>(`/matching/tutors/${tutorId}`).then((r) => r.data),
     enabled: !!tutorId,
+    // 404 = "Tutor not found" (API doc): a normal state, not worth retrying.
+    retry: (failureCount, error) => error.response?.status !== 404 && failureCount < 1,
   });
 }
 
