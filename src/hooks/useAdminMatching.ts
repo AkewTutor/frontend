@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
@@ -36,9 +37,12 @@ export function useRejectCohort() {
 
 export function useManualAssign() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: { tutorId: string; studentIds: string[]; format: CohortFormat }) =>
-      api.post('/admin/matching/manual-assign', body).then((r) => r.data),
+  return useMutation<
+    unknown,
+    AxiosError<{ message?: string }>,
+    { tutorId: string; studentIds: string[]; format: CohortFormat }
+  >({
+    mutationFn: (body) => api.post('/admin/matching/manual-assign', body).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHING_QUEUE] }),
   });
 }
