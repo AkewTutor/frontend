@@ -82,10 +82,12 @@ export function useRequestGroupFormat() {
 
 // GET /matching/requests/me. Polls: zeroMatchEscalation/staleApproval jobs change status server-side.
 export function useMyMatchRequests() {
-  return useQuery({
+  return useQuery<{ requests: MatchRequest[] }, AxiosError>({
     queryKey: [QUERY_KEYS.MATCH_REQUESTS],
     queryFn: () =>
       api.get<{ requests: MatchRequest[] }>('/matching/requests/me').then((r) => r.data),
     refetchInterval: 30_000,
+    // 404 = "No match request in progress" (API doc): a normal state, not worth retrying.
+    retry: (failureCount, error) => error.response?.status !== 404 && failureCount < 1,
   });
 }
