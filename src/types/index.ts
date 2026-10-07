@@ -162,6 +162,25 @@ export interface TutorSearchResult {
   pricePerStudentPerHour: string;
 }
 
+export interface MatchingQueueItem {
+  cohortId: string;
+  path: 'PATH_A' | 'PATH_B' | 'PATH_C';
+  format: CohortFormat;
+  tutorId: string;
+  studentIds: string[];
+  createdAt: string;
+  isOverdue: boolean;
+  adminOverdueNotifiedAt: string | null;
+  studentDelayNotifiedAt: string | null;
+}
+
+export interface MatchingQueueResponse {
+  queue: MatchingQueueItem[]; // API doc key; 8-3 says `items` (unresolved)
+  page: number;
+  limit: number;
+  total: number;
+}
+
 export interface Cohort {
   cohortId: string;
   format: CohortFormat;
