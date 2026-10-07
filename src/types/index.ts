@@ -331,6 +331,24 @@ export interface Message {
   createdAt: string;
 }
 
+export interface MessagesResponse {
+  messages: Message[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+// Admin review: the API returns no senderRole here.
+export interface AdminThreadView {
+  id: string;
+  cohortId: string;
+  status: MessageThread['status'];
+  messages: { id: string; senderId: string; body: string; createdAt: string }[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
 // ── gamification-engagement ────────────────────────────────
 export interface XPProgress {
   totalXP: number;
