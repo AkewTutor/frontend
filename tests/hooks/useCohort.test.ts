@@ -75,7 +75,9 @@ describe('useMyCohorts', () => {
 
 describe('useCohortMembers', () => {
   it('requests the members of the given cohort and returns the payload', async () => {
-    const payload = { members: [{ studentId: 's1', displayName: 'Sam', profilePictureUrl: null }] };
+    const payload = {
+      members: [{ id: 'u1', role: 'STUDENT', displayName: 'Sam', profilePictureUrl: null }],
+    };
     mockedApi.get.mockResolvedValue({ data: payload });
     const { wrapper } = setup();
 
