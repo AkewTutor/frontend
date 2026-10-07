@@ -120,4 +120,29 @@ describe('GroupFormatStatusPage', () => {
       '/student/format-switch'
     );
   });
+
+  it('treats a 404 on match requests as "no requests", not an error', () => {
+    mockCohorts([baseCohort]);
+    useMyMatchRequestsMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: { response: { status: 404 } },
+    });
+    renderPage();
+    expect(screen.queryByText(/couldn.t load/i)).toBeNull();
+    expect(screen.getByRole('link', { name: 'Request format switch' })).toBeInTheDocument();
+  });
+
+  it('still shows the error line for a non-404 failure', () => {
+    mockCohorts([baseCohort]);
+    useMyMatchRequestsMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: { response: { status: 500 } },
+    });
+    renderPage();
+    expect(screen.getByText(/couldn.t load/i)).toBeInTheDocument();
+  });
 });

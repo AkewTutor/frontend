@@ -39,12 +39,16 @@ export default function GroupFormatStatusPage() {
   if (cohortsQuery.isLoading || requestsQuery.isLoading) {
     return <p className="p-6">Loading…</p>;
   }
-  if (cohortsQuery.isError || requestsQuery.isError) {
+
+  // 404 on requests/me = "No match request in progress": an empty state, not an error.
+  const noActiveRequest = requestsQuery.error?.response?.status === 404;
+
+  if (cohortsQuery.isError || (requestsQuery.isError && !noActiveRequest)) {
     return <p className="p-6">We couldn&apos;t load your group status. Please try again later.</p>;
   }
 
   const cohorts = cohortsQuery.data?.cohorts ?? [];
-  const requests = requestsQuery.data?.requests ?? [];
+  const requests = noActiveRequest ? [] : (requestsQuery.data?.requests ?? []);
 
   if (cohorts.length === 0 && requests.length === 0) {
     return (
