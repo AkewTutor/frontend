@@ -154,6 +154,14 @@ export interface MatchRequest {
   zeroMatchSince: string | null;
 }
 
+export interface TutorSearchResult {
+  tutorId: string;
+  name: string;
+  profilePictureUrl: string | null;
+  verificationStatus: string;
+  pricePerStudentPerHour: string;
+}
+
 export interface Cohort {
   cohortId: string;
   format: CohortFormat;
