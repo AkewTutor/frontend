@@ -4,11 +4,14 @@ import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
 import type { Challenge, ChallengeProgress } from '@/types';
 
+// The real backend returns a bare array here; doc 06 shows { challenges: [...] }. Normalized to the documented shape.
 export function useActiveChallenges() {
   return useQuery({
     queryKey: [QUERY_KEYS.CHALLENGES],
     queryFn: () =>
-      api.get<{ challenges: Challenge[] }>('/gamification/challenges').then((r) => r.data),
+      api.get<Challenge[] | { challenges: Challenge[] }>('/gamification/challenges').then((r) => ({
+        challenges: Array.isArray(r.data) ? r.data : (r.data.challenges ?? []),
+      })),
   });
 }
 
