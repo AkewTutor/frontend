@@ -27,14 +27,39 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+const challenge = {
+  id: 'c1',
+  title: 'Three assessments',
+  period: 'WEEKLY' as const,
+  startsAt: '2026-10-12T00:00:00.000Z',
+  endsAt: '2026-10-19T00:00:00.000Z',
+  targetValue: 3,
+};
+
 describe('useActiveChallenges', () => {
-  it('GETs /gamification/challenges under [CHALLENGES]', async () => {
+  it('GETs /gamification/challenges under [CHALLENGES] (documented object shape)', async () => {
     mockedApi.get.mockResolvedValue({ data: { challenges: [] } });
     const { qc, wrapper } = setup();
     const { result } = renderHook(() => useActiveChallenges(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedApi.get).toHaveBeenCalledWith('/gamification/challenges');
     expect(qc.getQueryData([QUERY_KEYS.CHALLENGES])).toEqual({ challenges: [] });
+  });
+
+  it('normalizes the bare array the real backend returns', async () => {
+    mockedApi.get.mockResolvedValue({ data: [challenge] });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useActiveChallenges(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ challenges: [challenge] });
+  });
+
+  it('normalizes an empty bare array', async () => {
+    mockedApi.get.mockResolvedValue({ data: [] });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useActiveChallenges(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ challenges: [] });
   });
 });
 
