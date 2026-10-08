@@ -54,11 +54,13 @@ export function useActivateInvite() {
   });
 }
 
-// Fire-and-toast. UC-07: a Grade 6-12 student invites an optional guardian.
+// Fire-and-toast. UC-07: a Grade 6-12 student invites an optional guardian. Body per API: { inviteContact }.
 export function useInviteGuardian() {
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { email?: string; phone?: string }) =>
+    mutationFn: (body: { inviteContact: string }) =>
       api.post('/guardianship/guardian-invites', body).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.RELATIONSHIPS] }),
   });
 }
 

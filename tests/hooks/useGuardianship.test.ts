@@ -113,16 +113,17 @@ describe('useResendInvite / useInviteGuardian', () => {
     expect(mockedApi.post).toHaveBeenCalledWith('/guardianship/invites/r1/resend');
   });
 
-  it('invites a guardian by contact', async () => {
+  it('invites a guardian by contact and refreshes relationships', async () => {
     mockedApi.post.mockResolvedValue({ data: {} });
-    const { wrapper } = setup();
+    const { wrapper, spy } = setup();
     const { result } = renderHook(() => useInviteGuardian(), { wrapper });
     await act(async () => {
-      await result.current.mutateAsync({ email: 'g@b.co' });
+      await result.current.mutateAsync({ inviteContact: 'g@b.co' });
     });
     expect(mockedApi.post).toHaveBeenCalledWith('/guardianship/guardian-invites', {
-      email: 'g@b.co',
+      inviteContact: 'g@b.co',
     });
+    expect(spy).toHaveBeenCalled();
   });
 });
 
