@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faGraduationCap, faUser, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
@@ -52,13 +52,23 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
     <header
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        solid ? 'bg-primary shadow-header' : 'bg-transparent'
+        solid ? 'bg-[#12535b] shadow-header' : 'bg-transparent'
       )}
+      data-purpose="site-header"
     >
-      <div className="mx-auto flex h-16 max-w-site items-center justify-between px-space-gutter">
-        <Link to={ROUTES.LANDING} className="flex items-center gap-2 text-white">
-          <FontAwesomeIcon icon={faGraduationCap} className="text-accent" aria-hidden="true" />
-          <span className="text-l font-light">AKEWTutor</span>
+      <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between z-20">
+        <Link
+          to={ROUTES.LANDING}
+          className="flex items-center gap-3 text-white font-medium text-xl tracking-tight transition hover:opacity-90"
+        >
+          <svg
+            aria-hidden="true"
+            className="w-7 h-7 text-brand-accent fill-current"
+            viewBox="0 0 24 24"
+          >
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"></path>
+          </svg>
+          <span className="font-normal text-[21px] tracking-wide">AKEWTutor</span>
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-6 md:flex">
@@ -69,7 +79,7 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
               end
               className={({ isActive }) =>
                 cn(
-                  'relative text-m font-light text-white/85 hover:text-white',
+                  'relative text-m font-light text-white/85 hover:text-white transition-all duration-200',
                   isActive && 'font-bold text-white'
                 )
               }
@@ -89,12 +99,24 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
         <div className="flex items-center gap-3">
           <Link
             to={authTo}
-            className="hidden items-center gap-3 rounded-pill bg-dark py-1 pr-1 pl-4 text-s font-semibold text-white transition-colors hover:bg-black md:inline-flex"
+            className="hidden md:flex items-center gap-2.5 bg-black hover:bg-neutral-900 transition-colors duration-150 px-4 py-2 rounded-full text-sm font-medium shadow-sm"
           >
-            {authLabel}
-            <span className="grid size-[38px] place-items-center rounded-full bg-accent text-accent-foreground">
-              <FontAwesomeIcon icon={faUser} aria-hidden="true" />
+            <span className="w-7 h-7 bg-brand-accent rounded-full flex items-center justify-center text-black">
+              <svg
+                className="w-4 h-4 text-black"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></path>
+              </svg>
             </span>
+            <span className="text-white pr-1">{authLabel}</span>
           </Link>
           <button
             type="button"
