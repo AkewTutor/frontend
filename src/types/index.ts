@@ -416,6 +416,13 @@ export interface ChallengeProgress {
   completedAt: string | null;
 }
 
+export interface AdminBadgesResponse {
+  badges: AdminBadge[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
 // ── payments-earnings (money fields are Decimal-as-string) ──
 export interface PaymentRecord {
   id: string;
