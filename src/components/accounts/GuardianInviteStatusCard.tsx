@@ -4,7 +4,7 @@ import type { ParentStudentRelationship } from '@/types';
 
 interface GuardianInviteStatusCardProps {
   relationship: ParentStudentRelationship;
-  onResend: () => void;
+  onResend?: () => void;
 }
 
 // The parent page owns useResendInvite and its toast; this card only reports the click.
@@ -15,7 +15,7 @@ export default function GuardianInviteStatusCard({
   return (
     <div className="flex items-center justify-between gap-3 rounded-m border border-border p-4">
       <StatusBadge status={relationship.status} />
-      {relationship.status === 'INVITED' && (
+      {relationship.status === 'INVITED' && onResend && (
         <Button type="button" variant="secondary" size="sm" onClick={onResend}>
           Resend
         </Button>
