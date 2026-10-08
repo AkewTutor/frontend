@@ -112,10 +112,13 @@ export interface ParentStudentRelationship {
 export interface TutorProfile {
   id: string;
   userId: string;
-  qualifications: string | null;
-  experienceYears: number | null;
-  education: string | null;
+  profilePictureUrl: string | null;
+  bio: string | null;
+  experienceDescription: string | null;
+  educationInstitution: string | null;
+  degree: string | null;
   verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  verifiedAt: string | null;
 }
 
 export interface TutorSubjectRanking {
@@ -571,6 +574,22 @@ export interface AdminUser {
 
 export interface AdminPeopleResponse {
   users: AdminUser[];
+  page: number;
+  limit: number;
+  total: number;
+}
+// ── admin tutor verification (API 02 GET /admin/tutors/pending) ──
+export interface PendingTutor {
+  id: string;
+  userId: string;
+  experienceDescription: string | null;
+  educationInstitution: string | null;
+  verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  createdAt: string;
+}
+
+export interface PendingTutorsResponse {
+  tutors: PendingTutor[];
   page: number;
   limit: number;
   total: number;
