@@ -11,14 +11,21 @@
  */
 @theme static {
   /* Brand [H] */
-  --color-primary: #145f69;
+  --color-primary: #12535b;
   --color-primary-foreground: #ffffff;
-  --color-hero-from: #126b72;
-  --color-hero-via: #0d626a;
-  --color-hero-to: #08434c;
-  --color-accent: #c2fb5a;
-  --color-accent-foreground: #12181b;
+  --color-hero-from: #12535b;
+  --color-hero-via: #12535b;
+  --color-hero-to: #12535b;
+  --color-accent: #b4f04c;
+  --color-accent-foreground: #000000;
   --color-accent-ink: #3e5a25;
+
+  /* Custom Brand Additions from UI */
+  --color-brand-teal: #105259;
+  --color-brand-teal-dark: #0c4248;
+  --color-brand-teal-deep: #0a363b;
+  --color-brand-accent: #b4f04c;
+  --color-brand-accent-hover: #a3e635;
 
   /* Neutrals [H] */
   --color-dark: #12181b;
@@ -184,4 +191,13 @@
   border: 1px solid rgb(255 255 255 / 0.3);
   backdrop-filter: blur(8px);
   border-radius: var(--radius-s);
+}
+
+/* Glass card for the hero [H] */
+@utility glass-stat-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.18);
 }
