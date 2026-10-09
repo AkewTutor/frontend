@@ -19,7 +19,7 @@ export function formatMoney(value: string, currency = 'ETB'): string {
   return `${negative ? '-' : ''}${grouped}.${fraction} ${currency}`;
 }
 
-// Decimal-safe check that parts add up to total (e.g. platform + tutor share = total per hour).
+// Decimal-safe check that parts add up to total.
 export function sumEquals(parts: string[], total: string): boolean {
   try {
     return parts.reduce((acc, part) => acc.plus(part), new Decimal(0)).equals(new Decimal(total));
@@ -37,7 +37,7 @@ export function multiplyMoney(value: string, factor: number): string | null {
   }
 }
 
-// Decimal-safe inclusive range check on a decimal string (min and max are decimal strings too).
+// Decimal-safe inclusive range check on a decimal string.
 export function isDecimalBetween(value: string, min: string, max: string): boolean {
   try {
     const d = new Decimal(value);
