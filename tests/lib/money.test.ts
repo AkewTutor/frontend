@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMoney, sumEquals } from '@/lib/money';
+import { formatMoney, multiplyMoney, sumEquals } from '@/lib/money';
 
 describe('formatMoney', () => {
   it('adds thousands separators, two decimals and the currency suffix', () => {
@@ -46,5 +46,20 @@ describe('sumEquals', () => {
 
   it('returns false on invalid input', () => {
     expect(sumEquals(['x', '1'], '2')).toBe(false);
+  });
+});
+
+describe('multiplyMoney', () => {
+  it('multiplies without float error', () => {
+    expect(0.1 * 3 === 0.3).toBe(false);
+    expect(multiplyMoney('0.1', 3)).toBe('0.30');
+  });
+
+  it('returns a 2-decimal string', () => {
+    expect(multiplyMoney('150', 3)).toBe('450.00');
+  });
+
+  it('returns null for invalid input', () => {
+    expect(multiplyMoney('abc', 3)).toBeNull();
   });
 });
