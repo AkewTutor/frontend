@@ -36,3 +36,13 @@ export function multiplyMoney(value: string, factor: number): string | null {
     return null;
   }
 }
+
+// Decimal-safe inclusive range check on a decimal string (min and max are decimal strings too).
+export function isDecimalBetween(value: string, min: string, max: string): boolean {
+  try {
+    const d = new Decimal(value);
+    return d.gte(min) && d.lte(max);
+  } catch {
+    return false;
+  }
+}
