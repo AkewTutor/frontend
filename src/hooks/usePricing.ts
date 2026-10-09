@@ -4,10 +4,14 @@ import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
 import type { FormatPricing } from '@/types';
 
+// The doc shows { pricing: [...] }; the real backend may return a bare array. Normalized to the documented shape.
 export function useActivePricing() {
   return useQuery({
     queryKey: [QUERY_KEYS.PRICING],
-    queryFn: () => api.get<{ pricing: FormatPricing[] }>('/pricing').then((r) => r.data),
+    queryFn: () =>
+      api.get<FormatPricing[] | { pricing: FormatPricing[] }>('/pricing').then((r) => ({
+        pricing: Array.isArray(r.data) ? r.data : (r.data.pricing ?? []),
+      })),
   });
 }
 
