@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import CountdownTimer from '@/components/common/CountdownTimer';
@@ -14,8 +15,10 @@ export default function PaymentReminderBanner({
   studentId: string;
   dueDate: string;
 }) {
-  const remaining = new Date(dueDate).getTime() - Date.now();
+  const [now] = useState(() => Date.now());
+  const remaining = new Date(dueDate).getTime() - now;
   if (!Number.isFinite(remaining) || remaining > THREE_DAYS_MS) return null;
+
   return (
     <div
       role="status"
