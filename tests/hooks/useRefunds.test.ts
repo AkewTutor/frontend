@@ -47,6 +47,27 @@ describe('useRefundQueue', () => {
       params: { status: undefined, page: 1, limit: 20 },
     });
   });
+
+  it('normalizes a bare-array response', async () => {
+    mockedApi.get.mockResolvedValue({ data: [{ id: 'r1' }, { id: 'r2' }] });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useRefundQueue(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({
+      refunds: [{ id: 'r1' }, { id: 'r2' }],
+      page: 1,
+      limit: 20,
+      total: 2,
+    });
+  });
+
+  it('normalizes an empty bare array to an empty queue', async () => {
+    mockedApi.get.mockResolvedValue({ data: [] });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useRefundQueue(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ refunds: [], page: 1, limit: 20, total: 0 });
+  });
 });
 
 describe('useApproveRefund', () => {
