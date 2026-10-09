@@ -199,6 +199,7 @@ export interface MatchingQueueResponse {
 
 export interface Cohort {
   cohortId: string;
+  cohortMembershipId: string;
   format: CohortFormat;
   status: 'FORMING' | 'PENDING_APPROVAL' | 'ACTIVE' | 'ENDED';
   targetGroupSize: number;
