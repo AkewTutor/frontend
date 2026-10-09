@@ -21,6 +21,7 @@ vi.mock('@/hooks/useMatching', () => ({
 
 const baseCohort: Cohort = {
   cohortId: 'c1',
+  cohortMembershipId: 'm1',
   format: 'ONE_TO_THREE',
   status: 'FORMING',
   targetGroupSize: 3,
