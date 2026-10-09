@@ -27,3 +27,12 @@ export function sumEquals(parts: string[], total: string): boolean {
     return false;
   }
 }
+
+// Decimal-safe value * whole-number factor, as a 2-decimal string; null when value is not a number.
+export function multiplyMoney(value: string, factor: number): string | null {
+  try {
+    return new Decimal(value).times(factor).toFixed(2);
+  } catch {
+    return null;
+  }
+}
