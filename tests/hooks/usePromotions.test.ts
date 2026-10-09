@@ -21,19 +21,34 @@ function setup() {
   return { qc, invalidate, wrapper };
 }
 
+const promo = {
+  code: 'BACK',
+  discountType: 'PERCENT',
+  discountValue: '10.00',
+  validTo: '2026-10-31T00:00:00Z',
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe('useActivePromotions', () => {
-  it('GETs /promotions/active under the [PROMOTIONS] key', async () => {
-    const data = { promotions: [] };
+  it('GETs /promotions/active under the [PROMOTIONS] key (documented shape)', async () => {
+    const data = { promotions: [promo] };
     mockedApi.get.mockResolvedValue({ data });
     const { qc, wrapper } = setup();
     const { result } = renderHook(() => useActivePromotions(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedApi.get).toHaveBeenCalledWith('/promotions/active');
     expect(qc.getQueryData([QUERY_KEYS.PROMOTIONS])).toEqual(data);
+  });
+
+  it('normalizes a bare-array response to { promotions }', async () => {
+    mockedApi.get.mockResolvedValue({ data: [promo] });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useActivePromotions(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ promotions: [promo] });
   });
 });
 
