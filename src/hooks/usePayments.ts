@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
+import { useMyCohorts } from '@/hooks/useCohort';
 
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
@@ -42,14 +43,37 @@ export function useMyPayments(page = 1, studentId?: string) {
   });
 }
 
-// Disabled until a cohortMembershipId is known (the API requires it).
+const fetchPauseStatus = (cohortMembershipId: string) =>
+  api
+    .get<PaymentPauseStatus>('/payment-pause/status', { params: { cohortMembershipId } })
+    .then((r) => r.data);
+
 export function usePauseStatus(cohortMembershipId?: string) {
   return useQuery({
     queryKey: [QUERY_KEYS.PAUSE_STATUS, cohortMembershipId],
     enabled: Boolean(cohortMembershipId),
-    queryFn: () =>
-      api
-        .get<PaymentPauseStatus>('/payment-pause/status', { params: { cohortMembershipId } })
-        .then((r) => r.data),
+    queryFn: () => fetchPauseStatus(cohortMembershipId as string),
   });
+}
+
+// Pause state across all of the student's ACTIVE memberships (shares usePauseStatus's cache keys).
+// Parent: pass studentId. Do not call for a Parent without one.
+export function usePaymentPause(studentId?: string) {
+  const cohorts = useMyCohorts(studentId);
+  const ids = (cohorts.data?.cohorts ?? [])
+    .filter((c) => c.membershipStatus === 'ACTIVE')
+    .map((c) => c.cohortMembershipId);
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: [QUERY_KEYS.PAUSE_STATUS, id],
+      queryFn: () => fetchPauseStatus(id),
+    })),
+  });
+  const pauses = results.flatMap((r) => (r.data?.isPaused ? [r.data] : []));
+  return {
+    isLoading: cohorts.isLoading || results.some((r) => r.isLoading),
+    isError: cohorts.isError || results.some((r) => r.isError),
+    isPaused: pauses.length > 0,
+    pauses,
+  };
 }
