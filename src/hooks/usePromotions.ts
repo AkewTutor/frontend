@@ -4,11 +4,16 @@ import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
 import type { ActivePromotion, CreatedPromotion } from '@/types';
 
+// The doc shows { promotions: [...] }; the real backend may return a bare array. Normalized to the documented shape.
 export function useActivePromotions() {
   return useQuery({
     queryKey: [QUERY_KEYS.PROMOTIONS],
     queryFn: () =>
-      api.get<{ promotions: ActivePromotion[] }>('/promotions/active').then((r) => r.data),
+      api
+        .get<ActivePromotion[] | { promotions: ActivePromotion[] }>('/promotions/active')
+        .then((r) => ({
+          promotions: Array.isArray(r.data) ? r.data : (r.data.promotions ?? []),
+        })),
   });
 }
 
