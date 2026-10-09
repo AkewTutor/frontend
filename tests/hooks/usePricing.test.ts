@@ -21,19 +21,35 @@ function setup() {
   return { qc, invalidate, wrapper };
 }
 
+const row = {
+  format: 'ONE_TO_ONE',
+  pricePerStudentPerHour: '350.00',
+  totalPerHour: '350.00',
+  platformSharePerHour: '100.00',
+  tutorSharePerHour: '250.00',
+};
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe('useActivePricing', () => {
-  it('GETs /pricing under the [PRICING] key', async () => {
-    const data = { pricing: [] };
+  it('GETs /pricing under the [PRICING] key (documented { pricing } shape)', async () => {
+    const data = { pricing: [row] };
     mockedApi.get.mockResolvedValue({ data });
     const { qc, wrapper } = setup();
     const { result } = renderHook(() => useActivePricing(), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedApi.get).toHaveBeenCalledWith('/pricing');
     expect(qc.getQueryData([QUERY_KEYS.PRICING])).toEqual(data);
+  });
+
+  it('normalizes a bare-array response to { pricing }', async () => {
+    mockedApi.get.mockResolvedValue({ data: [row] });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useActivePricing(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ pricing: [row] });
   });
 });
 
