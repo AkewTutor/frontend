@@ -424,19 +424,34 @@ export interface AdminBadgesResponse {
 }
 
 // ── payments-earnings (money fields are Decimal-as-string) ──
+export interface InitiatedPayment {
+  paymentId: string;
+  chapaCheckoutUrl: string;
+  amount: string;
+  status: 'PENDING';
+}
+
 export interface PaymentRecord {
   id: string;
-  cohortId: string;
   amount: string;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
-  chapaCheckoutUrl: string | null;
+  billingPeriodStart: string;
+  billingPeriodEnd: string;
   createdAt: string;
+}
+
+export interface PaymentHistoryResponse {
+  payments: PaymentRecord[];
+  page: number;
+  limit: number;
+  total: number;
 }
 
 export interface PaymentPauseStatus {
   isPaused: boolean;
-  pausedSince: string | null;
-  studentId: string;
+  startedAt?: string;
+  reason?: string;
+  affectedSessions?: { sessionId: string; originalStart: string; status: string }[];
 }
 
 export interface FormatPricing {
