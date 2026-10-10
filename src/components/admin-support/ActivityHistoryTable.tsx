@@ -56,7 +56,7 @@ export default function ActivityHistoryTable() {
     eventType: eventType || undefined,
   });
 
-  const totalPages = data?.pagination.totalPages ?? 1;
+  const totalPages = data?.pagination?.totalPages ?? 1;
 
   return (
     <section className="flex flex-col gap-space-sm">

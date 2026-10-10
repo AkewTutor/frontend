@@ -26,7 +26,7 @@ export default function TutorPerformanceTable() {
   const [sortBy, setSortBy] = useState('uniqueStudentsTaught');
   const { data, isLoading, isError } = useTutorPerformance({ page, limit: LIMIT, sortBy });
 
-  const totalPages = data?.pagination.totalPages ?? 1;
+  const totalPages = data?.pagination?.totalPages ?? 1;
 
   return (
     <section className="flex flex-col gap-space-sm">
