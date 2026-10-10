@@ -3,6 +3,7 @@ import { useState } from 'react';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { totalPages as getTotalPages } from '@/lib/totalPages';
 import {
   Table,
   TableBody,
