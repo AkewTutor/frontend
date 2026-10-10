@@ -13,6 +13,7 @@ vi.mock('@/components/messaging/MessageThreadView', () => ({
 
 const cohort = (over: Partial<Cohort> = {}): Cohort => ({
   cohortId: 'c1',
+  cohortMembershipId: 'm1',
   format: 'ONE_TO_ONE',
   status: 'ACTIVE',
   targetGroupSize: 1,
