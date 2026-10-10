@@ -23,7 +23,7 @@ const row = {
 
 function ok(totalPages = 3, tutors = [row]) {
   return {
-    data: { tutors, pagination: { page: 1, limit: 20, total: 47, totalPages } },
+    data: { tutors, page: 1, limit: 20, total: totalPages * 20 },
     isLoading: false,
     isError: false,
   };

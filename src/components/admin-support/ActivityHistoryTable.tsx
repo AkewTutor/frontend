@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { totalPages as getTotalPages } from '@/lib/totalPages';
 import {
   Table,
   TableBody,
@@ -56,7 +57,7 @@ export default function ActivityHistoryTable() {
     eventType: eventType || undefined,
   });
 
-  const totalPages = data?.pagination?.totalPages ?? 1;
+  const totalPages = getTotalPages(data);
 
   return (
     <section className="flex flex-col gap-space-sm">

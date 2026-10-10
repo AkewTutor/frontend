@@ -23,7 +23,7 @@ const ev = (id: string, relatedEntityType: string, eventType = 'DISPUTE') => ({
 
 function ok(events = [ev('1', 'ComplaintReport')], totalPages = 5) {
   return {
-    data: { events, pagination: { page: 1, limit: 20, total: 100, totalPages } },
+    data: { events, page: 1, limit: 20, total: totalPages * 20 },
     isLoading: false,
     isError: false,
   };
