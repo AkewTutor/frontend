@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ActivityHistoryTable from '@/components/admin-support/ActivityHistoryTable';
 import { ROUTES } from '@/constants';
 
+declare const process: { env: Record<string, string | undefined> };
+
 const mocks = vi.hoisted(() => ({ useActivityHistory: vi.fn() }));
 vi.mock('@/hooks/useAdminReporting', () => ({
   useActivityHistory: mocks.useActivityHistory,
