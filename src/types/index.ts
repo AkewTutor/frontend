@@ -199,6 +199,7 @@ export interface MatchingQueueResponse {
 
 export interface Cohort {
   cohortId: string;
+  cohortMembershipId: string;
   format: CohortFormat;
   status: 'FORMING' | 'PENDING_APPROVAL' | 'ACTIVE' | 'ENDED';
   targetGroupSize: number;
@@ -416,20 +417,42 @@ export interface ChallengeProgress {
   completedAt: string | null;
 }
 
+export interface AdminBadgesResponse {
+  badges: AdminBadge[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
 // ── payments-earnings (money fields are Decimal-as-string) ──
+export interface InitiatedPayment {
+  paymentId: string;
+  chapaCheckoutUrl: string;
+  amount: string;
+  status: 'PENDING';
+}
+
 export interface PaymentRecord {
   id: string;
-  cohortId: string;
   amount: string;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
-  chapaCheckoutUrl: string | null;
+  billingPeriodStart: string;
+  billingPeriodEnd: string;
   createdAt: string;
+}
+
+export interface PaymentHistoryResponse {
+  payments: PaymentRecord[];
+  page: number;
+  limit: number;
+  total: number;
 }
 
 export interface PaymentPauseStatus {
   isPaused: boolean;
-  pausedSince: string | null;
-  studentId: string;
+  startedAt?: string;
+  reason?: string;
+  affectedSessions?: { sessionId: string; originalStart: string; status: string }[];
 }
 
 export interface FormatPricing {
@@ -440,12 +463,16 @@ export interface FormatPricing {
   tutorSharePerHour: string;
 }
 
+export type RefundStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export interface RefundCase {
   id: string;
   paymentId: string;
   amount: string;
   reason: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: RefundStatus;
+  sessionsRemaining: number;
+  totalSessionsBilled: number;
   approvedById: string | null;
   approvedAt: string | null;
   rejectedById: string | null;
@@ -454,27 +481,62 @@ export interface RefundCase {
   createdAt: string;
 }
 
-export interface TutorEarningsSummary {
-  totalEarnedThisMonth: string;
-  upcomingPayoutAmount: string;
-  reducedRateSessions: { sessionId: string; reason: string; rateApplied: string }[];
+export interface RefundQueueResponse {
+  refunds: RefundCase[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface TutorEarning {
+  sessionId: string;
+  amount: string;
+  rateType: 'FULL' | 'REDUCED_MAKEUP';
+  createdAt: string;
+}
+
+export interface UpcomingPayout {
+  periodStart: string;
+  periodEnd: string;
+  estimatedTotal: string;
+  expectedDate: string;
+}
+
+export interface TutorEarningsResponse {
+  earnings: TutorEarning[];
+  upcomingPayout: UpcomingPayout;
+  page: number;
+  limit: number;
+  total: number;
 }
 
 export interface PayoutBatch {
   id: string;
   tutorId: string;
-  amount: string;
-  status: 'PENDING' | 'PAID';
   periodStart: string;
   periodEnd: string;
+  totalAmount: string;
+  status: 'PENDING' | 'PAID';
 }
 
-export interface PromotionCode {
+export interface PayoutsResponse {
+  payouts: PayoutBatch[];
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface ActivePromotion {
+  code: string;
+  discountType: 'PERCENT' | 'FIXED_ETB';
+  discountValue: string;
+  validTo: string;
+}
+
+export interface CreatedPromotion {
   id: string;
   code: string;
-  discountPercent: number;
   isActive: boolean;
-  expiresAt: string | null;
 }
 
 // ── support-trust-admin ────────────────────────────────────
