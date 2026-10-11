@@ -604,9 +604,10 @@ export interface Pagination {
 
 export interface ActivityHistoryPage {
   events: ActivityEvent[];
-  pagination: Pagination;
+  page: number;
+  limit: number;
+  total: number;
 }
-
 export interface TutorPerformanceRow {
   tutorId: string;
   fullName: string;
@@ -622,7 +623,10 @@ export interface TutorPerformanceRow {
 
 export interface TutorPerformancePage {
   tutors: TutorPerformanceRow[];
-  pagination: Pagination;
+  page: number;
+  limit: number;
+  total: number;
+  pagination?: Pagination;
 }
 
 // ── admin people (covers Dev A's useUsers; API 02 GET /admin/people) ──
