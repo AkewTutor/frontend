@@ -67,16 +67,20 @@ function ParentMode({ relationships }: { relationships: ParentStudentRelationshi
               <div className="flex-1">
                 <GuardianInviteStatusCard
                   relationship={r}
-                  onResend={() =>
-                    resend.mutate(r.id, {
-                      onSuccess: () => toast.success('Invite sent again.'),
-                      onError: (error) =>
-                        toast.error(
-                          statusOf(error) === 409
-                            ? 'This student has already activated their account.'
-                            : 'Could not resend the invite. Please try again.'
-                        ),
-                    })
+                  // For optional-guardian invites this parent is the invitee; the student resends.
+                  onResend={
+                    r.relationshipType === 'OPTIONAL_GUARDIAN'
+                      ? undefined
+                      : () =>
+                          resend.mutate(r.id, {
+                            onSuccess: () => toast.success('Invite sent again.'),
+                            onError: (error) =>
+                              toast.error(
+                                statusOf(error) === 409
+                                  ? 'This student has already activated their account.'
+                                  : 'Could not resend the invite. Please try again.'
+                              ),
+                          })
                   }
                 />
               </div>
@@ -120,6 +124,7 @@ function ParentMode({ relationships }: { relationships: ParentStudentRelationshi
 
 function StudentMode({ relationships }: { relationships: ParentStudentRelationship[] }) {
   const invite = useInviteGuardian();
+  const resend = useResendInvite();
   const [contact, setContact] = useState('');
   const hasLink = relationships.some((r) => r.status === 'INVITED' || r.status === 'ACTIVE');
 
@@ -151,7 +156,23 @@ function StudentMode({ relationships }: { relationships: ParentStudentRelationsh
         <ul className="flex flex-col gap-3">
           {relationships.map((r) => (
             <li key={r.id}>
-              <GuardianInviteStatusCard relationship={r} />
+              <GuardianInviteStatusCard
+                relationship={r}
+                onResend={
+                  r.relationshipType === 'OPTIONAL_GUARDIAN'
+                    ? () =>
+                        resend.mutate(r.id, {
+                          onSuccess: () => toast.success('Invite sent again.'),
+                          onError: (error) =>
+                            toast.error(
+                              statusOf(error) === 409
+                                ? 'This invite was already activated or revoked.'
+                                : 'Could not resend the invite. Please try again.'
+                            ),
+                        })
+                    : undefined
+                }
+              />
             </li>
           ))}
         </ul>

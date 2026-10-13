@@ -105,6 +105,7 @@ export interface ParentStudentRelationship {
   id: string;
   studentId: string;
   parentId: string;
+  relationshipType?: 'MANDATORY_GUARDIAN' | 'OPTIONAL_GUARDIAN';
   status: 'INVITED' | 'ACTIVE' | 'REVOKED';
   createdAt: string;
 }
@@ -648,6 +649,13 @@ export interface AdminPeopleResponse {
 export interface PendingTutor {
   id: string;
   userId: string;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  profilePictureUrl?: string | null;
+  bio?: string | null;
+  degree?: string | null;
+  subjects?: { subjectId: string; name: string | null; rank: number }[];
   experienceDescription: string | null;
   educationInstitution: string | null;
   verificationStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
