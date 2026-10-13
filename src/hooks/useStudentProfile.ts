@@ -32,3 +32,20 @@ export function useUpdateAcademicProfile(studentId?: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT_PROFILE, studentId] }),
   });
 }
+
+export function useUploadProfilePicture(studentId?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData();
+      form.append('file', file);
+      return api
+        .post<StudentProfile>('/students/me/profile-picture', form, {
+          params: studentId ? { studentId } : undefined,
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        .then((r) => r.data);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.STUDENT_PROFILE, studentId] }),
+  });
+}
