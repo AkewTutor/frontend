@@ -26,7 +26,29 @@ export default function TutorVerificationCard({
 
   return (
     <article className="space-y-3 rounded-m border border-border p-4">
+      <header>
+        <h2 className="text-l font-bold">{tutor.name?.trim() || 'Unnamed tutor'}</h2>
+        <p className="text-s text-muted-foreground">
+          {[tutor.email, tutor.phone].filter(Boolean).join(' · ') || 'No contact on file'}
+        </p>
+      </header>
       <dl className="space-y-1 text-m">
+        <div>
+          <dt className="text-s text-muted-foreground">Subjects</dt>
+          <dd>
+            {tutor.subjects?.length
+              ? tutor.subjects.map((s) => `${s.name ?? 'Unknown'} (rank ${s.rank})`).join(', ')
+              : 'None ranked yet'}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-s text-muted-foreground">Degree</dt>
+          <dd>{orDash(tutor.degree ?? null)}</dd>
+        </div>
+        <div>
+          <dt className="text-s text-muted-foreground">Bio</dt>
+          <dd>{orDash(tutor.bio ?? null)}</dd>
+        </div>
         <div>
           <dt className="text-s text-muted-foreground">Education</dt>
           <dd>{orDash(tutor.educationInstitution)}</dd>
