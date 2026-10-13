@@ -26,7 +26,7 @@ describe('AvailabilityCalendar', () => {
     setup();
     fireEvent.click(cell('Mon 16:00'));
     expect(screen.getByText('New slot')).toBeInTheDocument();
-    expect(screen.getByLabelText('Start time')).toHaveValue('16:00');
+    expect(screen.getByLabelText('Start time (UTC)')).toHaveValue('16:00');
   });
 
   it('offers Remove, not a second form, on an occupied cell', () => {
