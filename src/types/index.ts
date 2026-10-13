@@ -105,6 +105,7 @@ export interface ParentStudentRelationship {
   id: string;
   studentId: string;
   parentId: string;
+  relationshipType?: 'MANDATORY_GUARDIAN' | 'OPTIONAL_GUARDIAN';
   status: 'INVITED' | 'ACTIVE' | 'REVOKED';
   createdAt: string;
 }
