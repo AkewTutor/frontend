@@ -23,6 +23,12 @@ const toMinutes = (hhmm: string) => {
   return h * 60 + m;
 };
 
+// 12-hour options (value stays 24h "HH:mm" for the conversion logic; label shows AM/PM).
+const TIME_OPTIONS = [...Array.from({ length: 96 }, (_, i) => i * 15), 1439].map((m) => ({
+  value: `${pad(Math.floor(m / 60))}:${pad(m % 60)}`,
+  label: formatMinutesAmPm(m),
+}));
+
 export interface NewSlot {
   dayOfWeek?: number;
   startTime: string;
@@ -97,7 +103,10 @@ function AddSlotForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-m border border-border p-4">
-      <p className="text-m font-semibold">New slot</p>
+      <p className="text-m font-semibold">
+        New slot{' '}
+        <span className="text-s font-normal text-muted-foreground">(Ethiopia time, EAT UTC+3)</span>
+      </p>
       <div className="grid items-end gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1">
           <Label htmlFor="slot-day">Day</Label>
@@ -115,17 +124,40 @@ function AddSlotForm({
           </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="slot-start">Start time</Label>
-          <Input
+          <div className="flex items-center gap-1">
+            <Label htmlFor="slot-start">Start time</Label>
+            <span className="text-s text-muted-foreground">(EAT)</span>
+          </div>
+          <select
             id="slot-start"
-            type="time"
+            className="h-10 w-full rounded-m border border-border bg-white px-3"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-          />
+          >
+            {TIME_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="slot-end">End time</Label>
-          <Input id="slot-end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
+          <div className="flex items-center gap-1">
+            <Label htmlFor="slot-end">End time</Label>
+            <span className="text-s text-muted-foreground">(EAT)</span>
+          </div>
+          <select
+            id="slot-end"
+            className="h-10 w-full rounded-m border border-border bg-white px-3"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+          >
+            {TIME_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>{' '}
         </div>
         <label className="flex h-10 items-center gap-2 text-m">
           <input
