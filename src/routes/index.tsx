@@ -9,6 +9,7 @@ import AuthLayout from '@/components/layouts/AuthLayout';
 import { ROUTES } from '@/constants';
 import type { Role } from '@/types';
 import PublicLayout from '@/components/layouts/PublicLayout';
+import PaymentPauseGuard from '@/components/payments/PaymentPauseGuard';
 
 // ── shared / public / auth ──
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -164,7 +165,14 @@ const router = createBrowserRouter([
       leaf(ROUTES.STUDENT_TUTOR_VIEW, TutorProfileViewPage),
       leaf(ROUTES.STUDENT_GROUP_STATUS, GroupFormatStatusPage),
       leaf(ROUTES.STUDENT_FORMAT_SWITCH, FormatSwitchPage),
-      leaf(ROUTES.STUDENT_UPCOMING_CLASSES, UpcomingClassesPage),
+      {
+        path: ROUTES.STUDENT_UPCOMING_CLASSES,
+        element: withSuspense(
+          <PaymentPauseGuard>
+            <UpcomingClassesPage />
+          </PaymentPauseGuard>
+        ),
+      },
       leaf(ROUTES.STUDENT_PROGRESS, ProgressPage),
       leaf(ROUTES.STUDENT_LEADERBOARD, LeaderboardPage),
       leaf(ROUTES.PAYMENTS, PaymentPage),
