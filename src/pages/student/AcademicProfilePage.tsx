@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   useMyStudentProfile,
   useUpdateAcademicProfile,
-  useUpdateProfile,
+  useUploadProfilePicture,
 } from '@/hooks/useStudentProfile';
 import { useSubjects } from '@/hooks/useSubjects';
 import type { StudentProfile } from '@/types';
+import type { ChangeEvent } from 'react';
 
 const FORMATS = [
   ['', 'No preference'],
@@ -19,6 +20,17 @@ const FORMATS = [
   ['ONE_TO_THREE', 'Small group (1-to-3)'],
   ['ONE_TO_FIVE', 'Small group (1-to-5)'],
 ] as const;
+
+const LANGUAGES = ['English', 'Amharic', 'Afaan Oromo', 'Tigrinya'];
+const TEACHING_STYLES = [
+  'Slow and step-by-step',
+  'Practical examples',
+  'Exam-focused',
+  'Fast-paced',
+  'Interactive discussion',
+];
+const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
+const SELECT_CLASS = 'h-10 rounded-m border border-border bg-white px-3';
 
 const text = (s: string) => {
   const t = s.trim();
@@ -41,41 +53,50 @@ export default function AcademicProfilePage() {
 }
 
 function PictureForm({ profile }: { profile: StudentProfile }) {
-  const update = useUpdateProfile();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { isDirty },
-  } = useForm<{ profilePictureUrl: string }>({
-    values: { profilePictureUrl: profile.profilePictureUrl ?? '' },
-  });
+  const upload = useUploadProfilePicture();
 
-  const onSubmit = (v: { profilePictureUrl: string }) => {
-    const url = text(v.profilePictureUrl);
-    if (!url) return;
-    update.mutate(
-      { profilePictureUrl: url },
-      {
-        onSuccess: () => {
-          reset(v);
-          toast.success('Picture saved.');
-        },
-        onError: () => toast.error('Could not save your picture. Please try again.'),
-      }
-    );
+  const onPick = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Please choose a JPG, PNG or WebP image.');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image must be 2 MB or smaller.');
+      return;
+    }
+    upload.mutate(file, {
+      onSuccess: () => toast.success('Picture saved.'),
+      onError: () => toast.error('Could not upload your picture. Please try again.'),
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+    <div className="flex items-center gap-4">
+      {profile.profilePictureUrl ? (
+        <img
+          src={profile.profilePictureUrl}
+          alt="Your profile"
+          className="h-20 w-20 rounded-full object-cover"
+        />
+      ) : (
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted text-s">
+          No photo
+        </div>
+      )}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="profilePictureUrl">Profile picture URL</Label>
-        <Input id="profilePictureUrl" {...register('profilePictureUrl')} />
+        <Label htmlFor="profilePicture">Profile picture (JPG, PNG or WebP, max 2 MB)</Label>
+        <Input
+          id="profilePicture"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={onPick}
+          disabled={upload.isPending}
+        />
       </div>
-      <Button type="submit" className="self-start" disabled={!isDirty || update.isPending}>
-        Save picture
-      </Button>
-    </form>
+    </div>
   );
 }
 
@@ -86,7 +107,6 @@ interface AcademicValues {
   learningGoals: string;
   preferredLanguage: string;
   teachingStylePreference: string;
-  budgetPreference: string;
   formatPreference: string;
   subjectsOfInterest: string[];
 }
@@ -109,7 +129,6 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
       learningGoals: profile.learningGoals ?? '',
       preferredLanguage: profile.preferredLanguage ?? '',
       teachingStylePreference: profile.teachingStylePreference ?? '',
-      budgetPreference: profile.budgetPreference ?? '',
       formatPreference: profile.formatPreference ?? '',
       subjectsOfInterest: profile.subjectsOfInterest ?? [],
     },
@@ -129,7 +148,6 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
       learningGoals: text(v.learningGoals),
       preferredLanguage: text(v.preferredLanguage),
       teachingStylePreference: text(v.teachingStylePreference),
-      budgetPreference: text(v.budgetPreference),
       formatPreference: (v.formatPreference || undefined) as StudentProfile['formatPreference'],
       subjectsOfInterest: v.subjectsOfInterest,
     };
@@ -167,8 +185,18 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
         <Input id="school" {...register('school')} />
       </div>
       <div className="flex flex-col gap-1">
-        <Label htmlFor="academicLevel">Academic level</Label>
-        <Input id="academicLevel" {...register('academicLevel')} />
+        <Label htmlFor="academicLevel">Your current level in these subjects</Label>
+        <select id="academicLevel" className={SELECT_CLASS} {...register('academicLevel')}>
+          <option value="">Select…</option>
+          {LEVELS.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+        <p className="text-s text-muted-foreground">
+          Helps us match you with a tutor who teaches at the right pace.
+        </p>
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="learningGoals">Learning goals</Label>
@@ -176,27 +204,29 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="preferredLanguage">Preferred language</Label>
-        <Input id="preferredLanguage" {...register('preferredLanguage')} />
+        <select id="preferredLanguage" className={SELECT_CLASS} {...register('preferredLanguage')}>
+          <option value="">Select…</option>
+          {LANGUAGES.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="teachingStylePreference">Teaching style</Label>
-        <Input id="teachingStylePreference" {...register('teachingStylePreference')} />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="budgetPreference">Budget</Label>
-        <Input
-          id="budgetPreference"
-          inputMode="decimal"
-          {...register('budgetPreference', {
-            validate: (v) =>
-              v === '' || /^\d+(\.\d{1,2})?$/.test(v) || 'Enter an amount like 150 or 150.50',
-          })}
-        />
-        {errors.budgetPreference && (
-          <p role="alert" className="text-s text-destructive">
-            {errors.budgetPreference.message}
-          </p>
-        )}
+        <select
+          id="teachingStylePreference"
+          className={SELECT_CLASS}
+          {...register('teachingStylePreference')}
+        >
+          <option value="">Select…</option>
+          {TEACHING_STYLES.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="formatPreference">Class format</Label>
