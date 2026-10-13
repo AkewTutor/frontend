@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   rels: vi.fn(),
   resend: { mutate: vi.fn(), isPending: false },
   revoke: { mutate: vi.fn(), isPending: false },
+  accept: { mutate: vi.fn(), isPending: false },
   invite: { mutate: vi.fn(), isPending: false },
 }));
 
@@ -17,16 +18,19 @@ vi.mock('@/hooks/useGuardianship', () => ({
   useMyRelationships: () => mocks.rels(),
   useResendInvite: () => mocks.resend,
   useRevokeRelationship: () => mocks.revoke,
+  useAcceptInvite: () => mocks.accept,
   useInviteGuardian: () => mocks.invite,
 }));
 
 const rel = (
   id: string,
-  status: ParentStudentRelationship['status']
+  status: ParentStudentRelationship['status'],
+  relationshipType?: ParentStudentRelationship['relationshipType']
 ): ParentStudentRelationship => ({
   id,
   studentId: 's1',
   parentId: 'p1',
+  relationshipType,
   status,
   createdAt: '2026-01-05T10:00:00.000Z',
 });
@@ -84,5 +88,18 @@ describe('GuardianSettingsPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Send invite' }));
     expect(mocks.invite.mutate.mock.calls[0][0]).toEqual({ inviteContact: 'g@b.co' });
+  });
+
+  it('parent invitee of an optional-guardian invite can accept, not resend', () => {
+    setup('PARENT', [rel('r1', 'INVITED', 'OPTIONAL_GUARDIAN')]);
+    expect(screen.queryByRole('button', { name: 'Resend' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Accept' }));
+    expect(mocks.accept.mutate.mock.calls[0][0]).toBe('r1');
+  });
+
+  it('student can resend its pending optional-guardian invite', () => {
+    setup('STUDENT', [rel('r1', 'INVITED', 'OPTIONAL_GUARDIAN')]);
+    fireEvent.click(screen.getByRole('button', { name: 'Resend' }));
+    expect(mocks.resend.mutate.mock.calls[0][0]).toBe('r1');
   });
 });

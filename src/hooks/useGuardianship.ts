@@ -33,6 +33,16 @@ export function useResendInvite() {
   });
 }
 
+// A registered guardian accepts an optional-guardian invite in the app (no link, no password).
+export function useAcceptInvite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (relationshipId: string) =>
+      api.post(`/guardianship/invites/${relationshipId}/accept`).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.RELATIONSHIPS] }),
+  });
+}
+
 // Public flow. The API response has no refreshToken/user, so this hook does NOT touch the auth store.
 export function useActivateInvite() {
   return useMutation({
