@@ -104,7 +104,7 @@ function AddSlotForm({
         </select>
       </div>
       <div className="space-y-1">
-        <Label htmlFor="slot-start">Start time</Label>
+        <Label htmlFor="slot-start">Start time (UTC)</Label>
         <Input
           id="slot-start"
           type="time"
@@ -113,7 +113,7 @@ function AddSlotForm({
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="slot-end">End time</Label>
+        <Label htmlFor="slot-end">End time (UTC)</Label>
         <Input id="slot-end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
       </div>
       <label className="flex items-center gap-2 text-m">
@@ -168,7 +168,7 @@ export default function AvailabilityCalendar({
 
   return (
     <div className="space-y-space-md">
-      <p className="text-s text-muted-foreground">Times are in UTC.</p>
+      <p className="text-s text-muted-foreground">Times are in UTC (Addis Ababa is UTC+3).</p>
       <div className="max-h-[480px] overflow-auto">
         <div className="grid min-w-[560px] grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] text-s">
           <div />

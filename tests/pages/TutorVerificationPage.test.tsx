@@ -9,6 +9,8 @@ const tutor: PendingTutor = {
   userId: 'u1',
   experienceDescription: '5 years teaching maths',
   educationInstitution: 'Addis Ababa University',
+  degree: 'BSc Mathematics',
+  bio: 'Maths tutor',
   verificationStatus: 'PENDING',
   createdAt: '2026-01-05T10:00:00.000Z',
 };
