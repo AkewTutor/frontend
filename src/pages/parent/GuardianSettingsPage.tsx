@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ROUTES } from '@/constants';
 import {
+  useAcceptInvite,
   useInviteGuardian,
   useMyRelationships,
   useResendInvite,
@@ -48,6 +49,7 @@ export default function GuardianSettingsPage() {
 
 function ParentMode({ relationships }: { relationships: ParentStudentRelationship[] }) {
   const resend = useResendInvite();
+  const accept = useAcceptInvite();
   const revoke = useRevokeRelationship();
 
   return (
@@ -67,7 +69,21 @@ function ParentMode({ relationships }: { relationships: ParentStudentRelationshi
               <div className="flex-1">
                 <GuardianInviteStatusCard
                   relationship={r}
-                  // For optional-guardian invites this parent is the invitee; the student resends.
+                  // For optional-guardian invites this parent is the invitee: accept (or revoke to decline); the student resends.
+                  onAccept={
+                    r.relationshipType === 'OPTIONAL_GUARDIAN'
+                      ? () =>
+                          accept.mutate(r.id, {
+                            onSuccess: () => toast.success('Invite accepted.'),
+                            onError: (error) =>
+                              toast.error(
+                                statusOf(error) === 409
+                                  ? 'This invite was already activated or revoked.'
+                                  : 'Could not accept the invite. Please try again.'
+                              ),
+                          })
+                      : undefined
+                  }
                   onResend={
                     r.relationshipType === 'OPTIONAL_GUARDIAN'
                       ? undefined
