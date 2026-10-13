@@ -6,13 +6,13 @@ import type { StudentProfile } from '@/types';
 
 const mocks = vi.hoisted(() => ({
   useMyStudentProfile: vi.fn(),
-  updateProfile: { mutate: vi.fn(), isPending: false },
+  upload: { mutate: vi.fn(), isPending: false },
   updateAcademic: { mutate: vi.fn(), isPending: false },
 }));
 
 vi.mock('@/hooks/useStudentProfile', () => ({
   useMyStudentProfile: (...a: unknown[]) => mocks.useMyStudentProfile(...a),
-  useUpdateProfile: () => mocks.updateProfile,
+  useUploadProfilePicture: () => mocks.upload,
   useUpdateAcademicProfile: () => mocks.updateAcademic,
 }));
 vi.mock('@/hooks/useSubjects', () => ({
@@ -57,26 +57,40 @@ describe('AcademicProfilePage', () => {
     expect(screen.getByText(/couldn.t load/i)).toBeTruthy();
   });
 
-  it('submits the two forms independently', async () => {
+  it('uploads a chosen picture file', () => {
     render(<AcademicProfilePage />);
+    const file = new File(['x'], 'me.png', { type: 'image/png' });
+    fireEvent.change(screen.getByLabelText(/Profile picture/), { target: { files: [file] } });
+    expect(mocks.upload.mutate).toHaveBeenCalledTimes(1);
+    expect(mocks.upload.mutate.mock.calls[0][0]).toBe(file);
+  });
 
-    fireEvent.change(screen.getByLabelText('Profile picture URL'), {
-      target: { value: 'https://x.test/me.png' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Save picture' }));
-    await waitFor(() => expect(mocks.updateProfile.mutate).toHaveBeenCalledTimes(1));
-    expect(mocks.updateProfile.mutate.mock.calls[0][0]).toEqual({
-      profilePictureUrl: 'https://x.test/me.png',
-    });
-    expect(mocks.updateAcademic.mutate).not.toHaveBeenCalled();
+  it('rejects a non-image picture without calling the API', () => {
+    render(<AcademicProfilePage />);
+    const file = new File(['x'], 'cv.pdf', { type: 'application/pdf' });
+    fireEvent.change(screen.getByLabelText(/Profile picture/), { target: { files: [file] } });
+    expect(mocks.upload.mutate).not.toHaveBeenCalled();
+  });
 
+  it('saves the academic form without the picture, budget or level fields', async () => {
+    render(<AcademicProfilePage />);
     fireEvent.change(screen.getByLabelText('School'), { target: { value: 'Bole' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save academic profile' }));
     await waitFor(() => expect(mocks.updateAcademic.mutate).toHaveBeenCalledTimes(1));
     const body = mocks.updateAcademic.mutate.mock.calls[0][0];
     expect(body).toMatchObject({ school: 'Bole', grade: 8 });
     expect(body).not.toHaveProperty('profilePictureUrl');
-    expect(mocks.updateProfile.mutate).toHaveBeenCalledTimes(1);
+    expect(body).not.toHaveProperty('budgetPreference');
+    expect(body).not.toHaveProperty('academicLevel');
+    expect(mocks.upload.mutate).not.toHaveBeenCalled();
+  });
+
+  it('sends the language chosen from the dropdown', async () => {
+    render(<AcademicProfilePage />);
+    fireEvent.change(screen.getByLabelText('Preferred language'), { target: { value: 'Amharic' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save academic profile' }));
+    await waitFor(() => expect(mocks.updateAcademic.mutate).toHaveBeenCalledTimes(1));
+    expect(mocks.updateAcademic.mutate.mock.calls[0][0].preferredLanguage).toBe('Amharic');
   });
 
   it('sends selected subjects of interest', async () => {

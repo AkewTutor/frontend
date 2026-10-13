@@ -29,7 +29,6 @@ const TEACHING_STYLES = [
   'Fast-paced',
   'Interactive discussion',
 ];
-const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 const SELECT_CLASS = 'h-10 rounded-m border border-border bg-white px-3';
 
 const text = (s: string) => {
@@ -103,7 +102,6 @@ function PictureForm({ profile }: { profile: StudentProfile }) {
 interface AcademicValues {
   grade: string;
   school: string;
-  academicLevel: string;
   learningGoals: string;
   preferredLanguage: string;
   teachingStylePreference: string;
@@ -125,7 +123,6 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
     values: {
       grade: String(profile.grade ?? ''),
       school: profile.school ?? '',
-      academicLevel: profile.academicLevel ?? '',
       learningGoals: profile.learningGoals ?? '',
       preferredLanguage: profile.preferredLanguage ?? '',
       teachingStylePreference: profile.teachingStylePreference ?? '',
@@ -144,7 +141,6 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
     const body: Partial<StudentProfile> = {
       grade: v.grade ? Number(v.grade) : undefined,
       school: text(v.school),
-      academicLevel: text(v.academicLevel),
       learningGoals: text(v.learningGoals),
       preferredLanguage: text(v.preferredLanguage),
       teachingStylePreference: text(v.teachingStylePreference),
@@ -183,20 +179,6 @@ function AcademicForm({ profile }: { profile: StudentProfile }) {
       <div className="flex flex-col gap-1">
         <Label htmlFor="school">School</Label>
         <Input id="school" {...register('school')} />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="academicLevel">Your current level in these subjects</Label>
-        <select id="academicLevel" className={SELECT_CLASS} {...register('academicLevel')}>
-          <option value="">Select…</option>
-          {LEVELS.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </select>
-        <p className="text-s text-muted-foreground">
-          Helps us match you with a tutor who teaches at the right pace.
-        </p>
       </div>
       <div className="flex flex-col gap-1">
         <Label htmlFor="learningGoals">Learning goals</Label>
