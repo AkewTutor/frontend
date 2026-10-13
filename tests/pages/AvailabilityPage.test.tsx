@@ -31,7 +31,7 @@ beforeEach(() => {
 describe('AvailabilityPage', () => {
   it('wires adding a slot to useAddSlot', () => {
     render(<AvailabilityPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Tue 09:00' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tue 9:00 AM' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     expect(mocks.add.mutate).toHaveBeenCalledTimes(1);
     expect(mocks.add.mutate.mock.calls[0][0]).toMatchObject({ dayOfWeek: 2, isRecurring: true });
@@ -39,7 +39,7 @@ describe('AvailabilityPage', () => {
 
   it('wires removing a slot to useRemoveSlot', () => {
     render(<AvailabilityPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Mon 16:00' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mon 7:00 PM' }));
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     expect(mocks.remove.mutate.mock.calls[0][0]).toBe('s1');
   });
