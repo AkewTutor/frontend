@@ -1,22 +1,44 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faChevronDown, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import { ROUTES } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth.store';
 import { roleDefaultRoute } from '@/lib/roleDefaultRoute';
 
-const policyPath = (type: string) => ROUTES.POLICY.replace(':type', type);
-
+/**
+ * Public nav. Until standalone pages (Subjects, Pricing, For Parents, FAQ & Contact)
+ * exist, each link targets a landing-page section by id. When a page ships, replace
+ * its `id` with a `to` route and drop the section id requirement.
+ *
+ * Required section ids in LandingPage: subjects, how-it-works, pricing,
+ * for-parents, faq-contact.
+ */
 const NAV_LINKS = [
-  { label: 'Home', to: ROUTES.LANDING },
-  { label: 'Safety', to: policyPath('SAFETY') },
-  { label: 'Privacy', to: policyPath('PRIVACY') },
-  { label: 'Terms', to: policyPath('TERMS') },
-  { label: 'Become a tutor', to: ROUTES.REGISTER_TUTOR },
-];
+  { label: 'Subjects', id: 'subjects' },
+  { label: 'How it works', id: 'how-it-works' },
+  { label: 'Pricing', id: 'pricing' },
+  { label: 'For Parents', id: 'for-parents' },
+  { label: 'FAQ & Contact', id: 'faq-contact' },
+] as const;
+
+const SIGNUP_OPTIONS = [
+  { label: 'Student', hint: 'I want to learn', to: ROUTES.REGISTER_STUDENT },
+  { label: 'Parent', hint: 'Register my child', to: ROUTES.REGISTER_PARENT },
+  { label: 'Tutor', hint: 'I want to teach', to: ROUTES.REGISTER_TUTOR },
+] as const;
+
+const HEADER_OFFSET = 72; // fixed header (64px) + breathing room
+
+function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return false;
+  const top = el.getBoundingClientRect().top + window.scrollY - HEADER_OFFSET;
+  window.scrollTo({ top, behavior: 'smooth' });
+  return true;
+}
 
 interface TopNavBarProps {
   /** Transparent over a hero until the page scrolls; solid otherwise. */
@@ -24,8 +46,14 @@ interface TopNavBarProps {
 }
 
 export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) {
+  const { pathname, hash } = useLocation();
+  const onLanding = pathname === ROUTES.LANDING;
+
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [signupOpen, setSignupOpen] = useState(false);
+  const signupRef = useRef<HTMLDivElement>(null);
+
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
   const authed = !!token && !!user;
@@ -39,14 +67,55 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Scroll to the section named in the URL hash (also when arriving from another
+  // public page). Retries briefly because LandingPage may still be lazy-loading.
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    if (!onLanding || !hash) return;
+    const id = hash.slice(1);
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      tries += 1;
+      if (scrollToId(id) || tries >= 15) window.clearInterval(timer);
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [onLanding, hash]);
+
+  // Close drawer + dropdown on Escape.
+  useEffect(() => {
+    if (!open && !signupOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        setSignupOpen(false);
+      }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [open, signupOpen]);
+
+  // Close the Sign Up dropdown on outside click.
+  useEffect(() => {
+    if (!signupOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!signupRef.current?.contains(e.target as Node)) setSignupOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [signupOpen]);
 
   const solid = !transparentAtTop || scrolled;
+  const isActive = (id: string) => onLanding && hash === `#${id}`;
+
+  const onAnchorClick = (id: string) => {
+    setOpen(false);
+    // Same-hash clicks don't change the location, so scroll explicitly.
+    if (onLanding && hash === `#${id}`) scrollToId(id);
+  };
+
+  const onLogoClick = () => {
+    setOpen(false);
+    if (onLanding) window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <header
@@ -56,10 +125,11 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
       )}
       data-purpose="site-header"
     >
-      <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between z-20">
+      <div className="w-full max-w-7xl mx-auto px-6 min-[1024px]:px-8 min-[1100px]:px-12 h-16 flex items-center justify-between gap-6 z-20">
         <Link
           to={ROUTES.LANDING}
-          className="flex items-center gap-3 text-white font-medium text-xl tracking-tight transition hover:opacity-90"
+          onClick={onLogoClick}
+          className="flex shrink-0 items-center gap-3 text-white font-medium text-xl tracking-tight transition hover:opacity-90"
         >
           <svg
             aria-hidden="true"
@@ -71,35 +141,33 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
           <span className="font-normal text-[21px] tracking-wide">AKEWTutor</span>
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-6 md:flex">
-          {NAV_LINKS.map(({ label, to }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end
-              className={({ isActive }) =>
-                cn(
-                  'relative text-m font-light text-white/85 hover:text-white transition-all duration-200',
-                  isActive && 'font-bold text-white'
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {label}
-                  {isActive && (
-                    <span className="absolute -bottom-1.5 left-0 h-[3px] w-[26px] rounded-pill bg-accent" />
-                  )}
-                </>
-              )}
-            </NavLink>
-          ))}
+        <nav aria-label="Main" className="hidden items-center gap-5 min-[1024px]:flex xl:gap-7">
+          {NAV_LINKS.map(({ label, id }) => {
+            const active = isActive(id);
+            return (
+              <Link
+                key={id}
+                to={{ pathname: ROUTES.LANDING, hash: `#${id}` }}
+                onClick={() => onAnchorClick(id)}
+                aria-current={active ? 'location' : undefined}
+                className={cn(
+                  'relative whitespace-nowrap text-m font-light text-white/85 hover:text-white transition-all duration-200',
+                  active && 'font-bold text-white'
+                )}
+              >
+                {label}
+                {active && (
+                  <span className="absolute -bottom-1.5 left-0 h-[3px] w-[26px] rounded-pill bg-accent" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <Link
             to={authTo}
-            className="hidden md:flex items-center gap-2.5 bg-black hover:bg-neutral-900 transition-colors duration-150 px-4 py-2 rounded-full text-sm font-medium shadow-sm"
+            className="hidden min-[1024px]:flex items-center gap-2.5 bg-black hover:bg-neutral-900 transition-colors duration-150 px-4 py-2 rounded-full text-sm font-medium shadow-sm"
           >
             <span className="w-7 h-7 bg-brand-accent rounded-full flex items-center justify-center text-black">
               <svg
@@ -118,12 +186,53 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
             </span>
             <span className="text-white pr-1">{authLabel}</span>
           </Link>
+
+          {!authed && (
+            <div ref={signupRef} className="relative hidden min-[1024px]:block">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={signupOpen}
+                onClick={() => setSignupOpen((v) => !v)}
+                className="flex items-center gap-2 bg-brand-accent hover:brightness-95 transition px-4 py-2 rounded-full text-sm font-semibold text-black shadow-sm"
+              >
+                Sign Up
+                <FontAwesomeIcon
+                  icon={faChevronDown}
+                  className={cn('text-[10px] transition-transform', signupOpen && 'rotate-180')}
+                />
+              </button>
+
+              {signupOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-3 w-60 overflow-hidden rounded-xl bg-white py-2 shadow-xl"
+                >
+                  {SIGNUP_OPTIONS.map(({ label, hint, to }) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      role="menuitem"
+                      onClick={() => setSignupOpen(false)}
+                      className="block px-4 py-2.5 hover:bg-black/5"
+                    >
+                      <span className="block text-sm font-semibold text-dark">
+                        Sign up as {label.toLowerCase()}
+                      </span>
+                      <span className="block text-xs text-dark/60">{hint}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             type="button"
             aria-label="Open menu"
             aria-expanded={open}
             onClick={() => setOpen(true)}
-            className="grid size-10 place-items-center text-white md:hidden"
+            className="grid size-10 place-items-center text-white min-[1024px]:hidden"
           >
             <FontAwesomeIcon icon={faBars} />
           </button>
@@ -131,13 +240,13 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 min-[1024px]:hidden">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
-          <aside className="absolute top-0 left-0 flex h-full w-[300px] flex-col gap-2 bg-white p-6">
+          <aside className="absolute top-0 left-0 flex h-full w-[300px] flex-col gap-1 overflow-y-auto bg-white p-6">
             <button
               type="button"
               aria-label="Close menu"
@@ -146,19 +255,48 @@ export default function TopNavBar({ transparentAtTop = false }: TopNavBarProps) 
             >
               <FontAwesomeIcon icon={faXmark} />
             </button>
-            {[...NAV_LINKS, { label: authLabel, to: authTo }].map(({ label, to }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  cn('py-2 text-m text-dark', isActive && 'font-bold text-primary')
-                }
+
+            {NAV_LINKS.map(({ label, id }) => (
+              <Link
+                key={id}
+                to={{ pathname: ROUTES.LANDING, hash: `#${id}` }}
+                onClick={() => onAnchorClick(id)}
+                className={cn('py-2 text-m text-dark', isActive(id) && 'font-bold text-primary')}
               >
                 {label}
-              </NavLink>
+              </Link>
             ))}
+
+            <div className="my-3 h-px bg-black/10" />
+
+            <NavLink
+              to={authTo}
+              end
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                cn('py-2 text-m text-dark', isActive && 'font-bold text-primary')
+              }
+            >
+              {authLabel}
+            </NavLink>
+
+            {!authed && (
+              <>
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-dark/50">
+                  Sign up
+                </p>
+                {SIGNUP_OPTIONS.map(({ label, hint, to }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setOpen(false)}
+                    className="py-2 text-m text-dark"
+                  >
+                    {label} <span className="text-xs text-dark/50">· {hint}</span>
+                  </Link>
+                ))}
+              </>
+            )}
           </aside>
         </div>
       )}
