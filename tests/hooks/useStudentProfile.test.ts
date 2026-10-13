@@ -9,10 +9,10 @@ import {
   useMyStudentProfile,
   useUpdateAcademicProfile,
   useUpdateProfile,
+  useUploadProfilePicture,
 } from '@/hooks/useStudentProfile';
 
-vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), patch: vi.fn() } }));
-
+vi.mock('@/lib/axios', () => ({ default: { get: vi.fn(), patch: vi.fn(), post: vi.fn() } }));
 const mockedApi = vi.mocked(api);
 
 function setup() {
@@ -78,5 +78,25 @@ describe('useUpdateAcademicProfile', () => {
       learningGoals: 'Pass exams',
     });
     expect(spy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.STUDENT_PROFILE, undefined] });
+  });
+});
+
+describe('useUploadProfilePicture', () => {
+  it('posts the file as multipart form data and invalidates the profile query', async () => {
+    mockedApi.post.mockResolvedValue({ data: { id: 'p1' } });
+    const { wrapper, spy } = setup();
+    const { result } = renderHook(() => useUploadProfilePicture('s1'), { wrapper });
+    const file = new File(['x'], 'me.png', { type: 'image/png' });
+    await act(async () => {
+      await result.current.mutateAsync(file);
+    });
+    const [url, form, config] = mockedApi.post.mock.calls[0];
+    expect(url).toBe('/students/me/profile-picture');
+    expect((form as FormData).get('file')).toBe(file);
+    expect(config).toMatchObject({
+      params: { studentId: 's1' },
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    expect(spy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.STUDENT_PROFILE, 's1'] });
   });
 });
