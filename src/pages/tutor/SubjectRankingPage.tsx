@@ -3,16 +3,18 @@ import { toast } from 'sonner';
 
 import SubjectRankingForm from '@/components/accounts/SubjectRankingForm';
 import { useSubjects } from '@/hooks/useSubjects';
-import { useRankSubjects } from '@/hooks/useTutorProfile';
+import { useMyRankedSubjects, useRankSubjects } from '@/hooks/useTutorProfile';
 import type { TutorSubjectRanking } from '@/types';
 
 export default function SubjectRankingPage() {
   const { data, isLoading, isError } = useSubjects();
+  const ranked = useMyRankedSubjects();
   const rank = useRankSubjects();
   const [saved, setSaved] = useState<TutorSubjectRanking[] | null>(null);
 
-  if (isLoading) return <p className="p-6">Loading subjects…</p>;
-  if (isError || !data) {
+  // The form seeds its selection once on mount, so wait for the saved ranking too.
+  if (isLoading || ranked.isLoading) return <p className="p-6">Loading subjects…</p>;
+  if (isError || !data || ranked.isError || !ranked.data) {
     return <p className="p-6">We couldn&apos;t load subjects. Please try again later.</p>;
   }
 
@@ -29,7 +31,7 @@ export default function SubjectRankingPage() {
       )}
       <SubjectRankingForm
         subjects={data.subjects}
-        currentRankings={[]}
+        currentRankings={ranked.data.subjects}
         onSave={(ranked) =>
           rank.mutate(ranked, {
             onSuccess: (res) => {

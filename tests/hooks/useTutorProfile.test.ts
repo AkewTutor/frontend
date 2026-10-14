@@ -7,6 +7,7 @@ import api from '@/lib/axios';
 import { QUERY_KEYS } from '@/constants';
 import {
   useMyTutorProfile,
+  useMyRankedSubjects,
   useRankSubjects,
   useResubmitVerification,
   useUpdateTutorProfile,
@@ -38,6 +39,18 @@ describe('useMyTutorProfile', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockedApi.get).toHaveBeenCalledWith('/tutors/me/profile');
     expect(result.current.data).toEqual({ id: 't1', verificationStatus: 'PENDING' });
+  });
+});
+
+describe('useMyRankedSubjects', () => {
+  it('fetches /tutors/me/subjects under a key inside [TUTOR_PROFILE]', async () => {
+    const payload = { subjects: [{ subjectId: 's1', subjectName: 'Algebra', rank: 1 }] };
+    mockedApi.get.mockResolvedValue({ data: payload });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMyRankedSubjects(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedApi.get).toHaveBeenCalledWith('/tutors/me/subjects');
+    expect(result.current.data).toEqual(payload);
   });
 });
 

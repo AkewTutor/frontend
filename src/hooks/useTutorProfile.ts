@@ -15,6 +15,16 @@ export function useMyTutorProfile() {
   });
 }
 
+// GET /tutors/me/subjects. Keyed under TUTOR_PROFILE so every existing
+// invalidate([TUTOR_PROFILE]) (e.g. after useRankSubjects) refreshes it too.
+export function useMyRankedSubjects() {
+  return useQuery({
+    queryKey: [QUERY_KEYS.TUTOR_PROFILE, 'subjects'],
+    queryFn: () =>
+      api.get<{ subjects: TutorSubjectRanking[] }>('/tutors/me/subjects').then((r) => r.data),
+  });
+}
+
 // verificationStatus is admin-only and is never part of the edit body.
 export function useUpdateTutorProfile() {
   const qc = useQueryClient();
