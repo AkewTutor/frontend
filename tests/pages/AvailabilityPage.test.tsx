@@ -55,7 +55,7 @@ describe('AvailabilityPage', () => {
 
   it('shows a success toast after a slot is added', () => {
     render(<AvailabilityPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Tue 9:00 AM' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tue 4:00 PM' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     mocks.add.mutate.mock.calls[0][1].onSuccess();
     expect(toast.success).toHaveBeenCalledWith('Slot added to your calendar');
@@ -63,7 +63,7 @@ describe('AvailabilityPage', () => {
 
   it('shows the backend message when the slot overlaps (409)', () => {
     render(<AvailabilityPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Tue 9:00 AM' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tue 4:00 PM' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     mocks.add.mutate.mock.calls[0][1].onError({
       response: { data: { message: 'This time overlaps a slot you already have' } },
