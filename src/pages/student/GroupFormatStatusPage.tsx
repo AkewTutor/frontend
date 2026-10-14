@@ -11,7 +11,7 @@ import { ROUTES } from '@/constants';
 import { useCohortMembers, useMyCohorts } from '@/hooks/useCohort';
 import { useMyMatchRequests } from '@/hooks/useMatching';
 
-const WAITING_STATUSES = ['FORMING', 'PENDING_APPROVAL'];
+const WAITING_STATUSES = ['FORMING', 'PENDING_APPROVAL', 'PENDING_ADMIN_APPROVAL'];
 
 function formatLabel(format: string) {
   return format.replace(/_/g, ' ').toLowerCase();
