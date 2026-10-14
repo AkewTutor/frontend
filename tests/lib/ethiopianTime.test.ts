@@ -8,6 +8,10 @@ import {
   formatMinutesAmPm,
   slotToEat,
   utcToEat,
+  dayKeyToDateInput,
+  eatDayKey,
+  eatWeekStartKey,
+  formatDayKey,
 } from '@/lib/ethiopianTime';
 
 describe('formatMinutesAmPm', () => {
@@ -85,5 +89,24 @@ describe('slotToEat', () => {
         isRecurring: false,
       })
     ).toEqual({ day: 2, startMin: 9 * 60, endMin: 10 * 60 });
+  });
+});
+
+describe('week helpers', () => {
+  const tue = '2026-10-13T10:00:00.000Z'; // Tuesday
+
+  it('finds the Sunday that starts the Ethiopian week', () => {
+    expect(dayKeyToDateInput(eatWeekStartKey(tue))).toBe('2026-10-11');
+    expect(dayKeyToDateInput(eatWeekStartKey(tue, 1))).toBe('2026-10-18');
+  });
+
+  it('uses the Ethiopian date, not the UTC date', () => {
+    // Sat 17 Oct 22:00 UTC is already Sun 18 Oct 1:00 AM in Ethiopia
+    expect(dayKeyToDateInput(eatDayKey('2026-10-17T22:00:00.000Z'))).toBe('2026-10-18');
+    expect(dayKeyToDateInput(eatWeekStartKey('2026-10-17T22:00:00.000Z'))).toBe('2026-10-18');
+  });
+
+  it('formats a day key', () => {
+    expect(formatDayKey(eatDayKey(tue))).toBe('Oct 13');
   });
 });

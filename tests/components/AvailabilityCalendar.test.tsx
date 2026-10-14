@@ -13,6 +13,15 @@ const monday16Utc: AvailabilitySlot = {
   isRecurring: true,
 };
 
+// One-off: Monday 19 Oct 2026, 4:00-5:00 PM in Ethiopia (13:00-14:00 UTC).
+const oneOffOct19: AvailabilitySlot = {
+  id: 's9',
+  dayOfWeek: 1,
+  startTime: '2026-10-19T13:00:00.000Z',
+  endTime: '2026-10-19T14:00:00.000Z',
+  isRecurring: false,
+};
+
 function setup(slots: AvailabilitySlot[] = []) {
   const onAddSlot = vi.fn();
   const onRemoveSlot = vi.fn();
@@ -57,10 +66,20 @@ describe('AvailabilityCalendar', () => {
     expect(screen.getByLabelText('Current Ethiopia time')).toHaveTextContent('3:00:00 PM');
   });
 
-  it('labels the grid in 12-hour Ethiopia time', () => {
+  it('shows PM hours by default and AM hours behind the AM toggle', () => {
     setup();
     expect(cell('Mon 4:00 PM')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sun 12:00 AM' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     expect(cell('Sun 12:00 AM')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mon 4:00 PM' })).not.toBeInTheDocument();
+  });
+
+  it('lists PM rows above AM rows in the All view', () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'All' }));
+    const labels = screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'));
+    expect(labels.indexOf('Mon 12:00 PM')).toBeLessThan(labels.indexOf('Mon 12:00 AM'));
   });
 
   it('fills the form when an empty cell is clicked, and keeps it visible', () => {
@@ -94,6 +113,7 @@ describe('AvailabilityCalendar', () => {
 
   it('sends the UTC weekday, so Monday 1 AM in Ethiopia is Sunday in UTC', () => {
     const { onAddSlot } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     expect(onAddSlot).toHaveBeenCalledWith({
@@ -106,6 +126,7 @@ describe('AvailabilityCalendar', () => {
 
   it('sends a non-recurring slot with an Ethiopian date and no dayOfWeek', () => {
     const { onAddSlot } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Tue 9:00 AM'));
     fireEvent.click(screen.getByLabelText('Recurring weekly'));
     fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-02-10' } });
@@ -131,6 +152,7 @@ describe('AvailabilityCalendar', () => {
 
   it('blocks a weekly slot that crosses 3:00 AM (midnight UTC)', () => {
     setup();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '02:00' } });
     fireEvent.change(screen.getByLabelText('End time'), { target: { value: '04:00' } });
@@ -149,6 +171,7 @@ describe('AvailabilityCalendar', () => {
       },
     ]);
     // Sunday 22:00 UTC is Monday 1:00 AM in Ethiopia
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     expect(screen.getByText(/Remove Mon 1:00 AM – 2:00 AM/)).toBeInTheDocument();
   });
@@ -165,5 +188,45 @@ describe('AvailabilityCalendar', () => {
     fireEvent.click(cell('Mon 8:00 PM'));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     expect(onAddSlot).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the current week and moves to next week', () => {
+    setup();
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent(
+      'Oct 11 – Oct 17, 2026 (this week)'
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent(
+      'Oct 18 – Oct 24, 2026 (next week)'
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'This week' }));
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent('(this week)');
+  });
+
+  it('shows a one-off slot only in its own week and a weekly slot in every week', () => {
+    setup([oneOffOct19, monday16Utc]);
+    fireEvent.click(cell('Mon 4:00 PM'));
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
+    fireEvent.click(cell('Mon 4:00 PM'));
+    expect(screen.getByText(/Remove Mon 4:00 PM – 5:00 PM on Oct 19/)).toBeInTheDocument();
+    fireEvent.click(cell('Mon 7:00 PM'));
+    expect(
+      screen.getByText(/Remove Mon 7:00 PM – 8:00 PM \(repeats every week\)/)
+    ).toBeInTheDocument();
+  });
+
+  it('prefills the one-off date for the week being viewed', () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
+    fireEvent.click(cell('Wed 4:00 PM'));
+    fireEvent.click(screen.getByLabelText('Recurring weekly'));
+    expect(screen.getByLabelText('Date')).toHaveValue('2026-10-21');
+  });
+
+  it('jumps to the week that contains a picked date', () => {
+    setup();
+    fireEvent.change(screen.getByLabelText('Jump to date'), { target: { value: '2026-11-02' } });
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent('Nov 1 – Nov 7, 2026');
   });
 });

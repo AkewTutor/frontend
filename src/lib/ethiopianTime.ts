@@ -9,8 +9,8 @@ export const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const MS_MIN = 60_000;
 const DAY_MIN = 1440;
-const DAY_MS = 86_400_000;
-// 2026-01-04 is a Sunday: reference week for recurring slots.
+export const DAY_MS = 86_400_000;
+export const WEEK_MS = 7 * DAY_MS; // 2026-01-04 is a Sunday: reference week for recurring slots.
 const REFERENCE_SUNDAY = Date.UTC(2026, 0, 4);
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -99,4 +99,27 @@ export function eatDateToUtcIso(date: string, hhmm: string): string {
 export function utcMinutesOf(iso: string): number {
   const d = new Date(iso);
   return d.getUTCHours() * 60 + d.getUTCMinutes();
+}
+
+/** Ethiopian calendar day of an instant, as epoch ms of that date at 00:00Z (a stable day key). */
+export function eatDayKey(input: string | Date): number {
+  const t = utcToEat(input);
+  return Date.UTC(t.year, t.month, t.date);
+}
+
+/** Day key of the Sunday that starts the Ethiopian week containing `input`, shifted by whole weeks. */
+export function eatWeekStartKey(input: string | Date, offsetWeeks = 0): number {
+  const t = utcToEat(input);
+  return Date.UTC(t.year, t.month, t.date - t.day + offsetWeeks * 7);
+}
+
+/** Day key -> "Oct 11". */
+export function formatDayKey(key: number): string {
+  const d = new Date(key);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
+/** Day key -> "2026-10-11" (for <input type="date">). */
+export function dayKeyToDateInput(key: number): string {
+  return new Date(key).toISOString().slice(0, 10);
 }
