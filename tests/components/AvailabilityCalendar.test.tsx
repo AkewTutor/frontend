@@ -13,6 +13,15 @@ const monday16Utc: AvailabilitySlot = {
   isRecurring: true,
 };
 
+// One-off: Monday 19 Oct 2026, 4:00-5:00 PM in Ethiopia (13:00-14:00 UTC).
+const oneOffOct19: AvailabilitySlot = {
+  id: 's9',
+  dayOfWeek: 1,
+  startTime: '2026-10-19T13:00:00.000Z',
+  endTime: '2026-10-19T14:00:00.000Z',
+  isRecurring: false,
+};
+
 function setup(slots: AvailabilitySlot[] = []) {
   const onAddSlot = vi.fn();
   const onRemoveSlot = vi.fn();
@@ -179,5 +188,45 @@ describe('AvailabilityCalendar', () => {
     fireEvent.click(cell('Mon 8:00 PM'));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     expect(onAddSlot).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the current week and moves to next week', () => {
+    setup();
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent(
+      'Oct 11 – Oct 17, 2026 (this week)'
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent(
+      'Oct 18 – Oct 24, 2026 (next week)'
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'This week' }));
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent('(this week)');
+  });
+
+  it('shows a one-off slot only in its own week and a weekly slot in every week', () => {
+    setup([oneOffOct19, monday16Utc]);
+    fireEvent.click(cell('Mon 4:00 PM'));
+    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
+    fireEvent.click(cell('Mon 4:00 PM'));
+    expect(screen.getByText(/Remove Mon 4:00 PM – 5:00 PM on Oct 19/)).toBeInTheDocument();
+    fireEvent.click(cell('Mon 7:00 PM'));
+    expect(
+      screen.getByText(/Remove Mon 7:00 PM – 8:00 PM \(repeats every week\)/)
+    ).toBeInTheDocument();
+  });
+
+  it('prefills the one-off date for the week being viewed', () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Next week' }));
+    fireEvent.click(cell('Wed 4:00 PM'));
+    fireEvent.click(screen.getByLabelText('Recurring weekly'));
+    expect(screen.getByLabelText('Date')).toHaveValue('2026-10-21');
+  });
+
+  it('jumps to the week that contains a picked date', () => {
+    setup();
+    fireEvent.change(screen.getByLabelText('Jump to date'), { target: { value: '2026-11-02' } });
+    expect(screen.getByLabelText('Week shown')).toHaveTextContent('Nov 1 – Nov 7, 2026');
   });
 });
