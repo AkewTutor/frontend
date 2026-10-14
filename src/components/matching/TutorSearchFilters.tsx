@@ -21,8 +21,8 @@ interface TutorSearchFiltersProps {
 
 const selectClass = 'h-9 w-full rounded-md border bg-background px-3 text-sm';
 
-// 1-to-1 only: never rendered for a group-format flow. Cleared fields are removed so the
-// "no filters yet" guard in useSearchTutors keeps working.
+// 1-to-1 only: never rendered for a group-format flow. Cleared fields are removed from the
+// value so they are not sent to the API. Subject is required to search.
 export default function TutorSearchFilters({ value, onChange, subjects }: TutorSearchFiltersProps) {
   const patch = (changes: Partial<TutorSearchFiltersValue>) => {
     const next: Record<string, unknown> = { ...value, ...changes };
@@ -33,7 +33,7 @@ export default function TutorSearchFilters({ value, onChange, subjects }: TutorS
   };
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div className="space-y-1">
         <Label htmlFor="filter-subject">Subject</Label>
         <select
@@ -42,7 +42,7 @@ export default function TutorSearchFilters({ value, onChange, subjects }: TutorS
           value={value.subjectId ?? ''}
           onChange={(e) => patch({ subjectId: e.target.value || undefined })}
         >
-          <option value="">Any subject</option>
+          <option value="">Select a subject</option>
           {subjects.map((subject) => (
             <option key={subject.id} value={subject.id}>
               {subject.name}
@@ -57,6 +57,7 @@ export default function TutorSearchFilters({ value, onChange, subjects }: TutorS
           id="filter-grade"
           type="number"
           min={1}
+          max={12}
           value={value.grade ?? ''}
           onChange={(e) =>
             patch({ grade: e.target.value === '' ? undefined : Number(e.target.value) })
@@ -88,15 +89,6 @@ export default function TutorSearchFilters({ value, onChange, subjects }: TutorS
           inputMode="decimal"
           value={value.budgetMax ?? ''}
           onChange={(e) => patch({ budgetMax: e.target.value || undefined })}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <Label htmlFor="filter-language">Language</Label>
-        <Input
-          id="filter-language"
-          value={value.language ?? ''}
-          onChange={(e) => patch({ language: e.target.value || undefined })}
         />
       </div>
     </div>

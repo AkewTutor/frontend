@@ -154,9 +154,12 @@ export interface TutorRecommendation {
 
 export interface MatchRequest {
   id: string;
+  subjectId?: string;
   format: CohortFormat;
-  status: 'SEARCHING' | 'PENDING_APPROVAL' | 'CONFIRMED' | 'REJECTED';
+  path?: 'PATH_A' | 'PATH_B' | 'PATH_C';
+  status: 'SEARCHING' | 'ZERO_MATCH_PENDING' | 'PENDING_ADMIN_ASSIGNMENT' | 'MATCHED' | 'CANCELLED';
   zeroMatchSince: string | null;
+  resultingCohortId?: string | null;
 }
 
 export interface TutorSearchResult {
@@ -164,7 +167,7 @@ export interface TutorSearchResult {
   name: string;
   profilePictureUrl: string | null;
   verificationStatus: string;
-  pricePerStudentPerHour: string;
+  pricePerStudentPerHour: string | null;
 }
 
 export interface TutorProfileView {
@@ -172,7 +175,7 @@ export interface TutorProfileView {
   name: string;
   profilePictureUrl: string | null;
   verificationStatus: string;
-  educationInstitution: string;
+  educationInstitution: string | null;
   degree?: string;
   subjectsAndGrades: { subjectName: string; grades: string }[];
   uniqueStudentsTaught: number;
@@ -202,7 +205,7 @@ export interface Cohort {
   cohortId: string;
   cohortMembershipId: string;
   format: CohortFormat;
-  status: 'FORMING' | 'PENDING_APPROVAL' | 'ACTIVE' | 'ENDED';
+  status: 'FORMING' | 'PENDING_APPROVAL' | 'PENDING_ADMIN_APPROVAL' | 'ACTIVE' | 'ENDED';
   targetGroupSize: number;
   groupFormationWindowExpiresAt: string | null;
   membershipStatus: 'PENDING_PAYMENT' | 'ACTIVE' | 'ENDED';

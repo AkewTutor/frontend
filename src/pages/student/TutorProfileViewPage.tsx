@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import StatusBadge from '@/components/common/StatusBadge';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ROUTES } from '@/constants';
 import { useSelectTutor, useTutorFullProfile } from '@/hooks/useMatching';
+import { selectTutorErrorMessage } from '@/utils/selectTutorError';
 
 function initials(name: string) {
   return name
@@ -18,6 +19,9 @@ function initials(name: string) {
 
 export default function TutorProfileViewPage() {
   const { tutorId = '' } = useParams();
+  // Set by the search results link so the new cohort gets the subject that was searched.
+  const [searchParams] = useSearchParams();
+  const subjectId = searchParams.get('subjectId') || undefined;
   const navigate = useNavigate();
   const { data, isLoading, isError, error } = useTutorFullProfile(tutorId);
   const selectTutor = useSelectTutor();
@@ -42,18 +46,10 @@ export default function TutorProfileViewPage() {
 
   const handleSelect = () => {
     selectTutor.mutate(
-      { tutorId: data.tutorId },
+      subjectId ? { tutorId: data.tutorId, subjectId } : { tutorId: data.tutorId },
       {
         onSuccess: () => navigate(ROUTES.STUDENT_GROUP_STATUS),
-        onError: (err) => {
-          if (err.response?.status === 409) {
-            toast.error(
-              'This tutor is no longer available. Please review the list and choose again.'
-            );
-          } else {
-            toast.error('Could not select this tutor. Please try again.');
-          }
-        },
+        onError: (err) => toast.error(selectTutorErrorMessage(err)),
       }
     );
   };
@@ -83,9 +79,11 @@ export default function TutorProfileViewPage() {
 
       <Card>
         <CardContent className="flex flex-col gap-2 p-4">
-          <p>
-            <strong>Institution:</strong> {data.educationInstitution}
-          </p>
+          {data.educationInstitution && (
+            <p>
+              <strong>Institution:</strong> {data.educationInstitution}
+            </p>
+          )}
           {data.degree && (
             <p>
               <strong>Degree:</strong> {data.degree}
@@ -100,7 +98,7 @@ export default function TutorProfileViewPage() {
       <section className="flex flex-col gap-2">
         <h2 className="text-m font-semibold">Subjects and grades</h2>
         <ul className="list-disc pl-6">
-          {data.subjectsAndGrades.map((entry) => (
+          {(data.subjectsAndGrades ?? []).map((entry) => (
             <li key={entry.subjectName}>
               {entry.subjectName} (grades {entry.grades})
             </li>
@@ -110,11 +108,11 @@ export default function TutorProfileViewPage() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-m font-semibold">Available slots</h2>
-        {data.availableSlots.length === 0 ? (
+        {(data.availableSlots ?? []).length === 0 ? (
           <p>No available slots listed.</p>
         ) : (
           <ul className="list-disc pl-6">
-            {data.availableSlots.map((slot) => (
+            {(data.availableSlots ?? []).map((slot) => (
               <li key={slot.startTime}>
                 {new Date(slot.startTime).toLocaleString()} –{' '}
                 {new Date(slot.endTime).toLocaleTimeString()}

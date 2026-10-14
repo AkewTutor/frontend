@@ -31,15 +31,15 @@ describe('TutorSearchFilters', () => {
     const onChange = vi.fn();
     render(
       <TutorSearchFilters
-        value={{ subjectId: 'sub1', language: 'Amharic' }}
+        value={{ subjectId: 'sub1', budgetMax: '300' }}
         onChange={onChange}
         subjects={subjects}
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Language'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Maximum budget'), { target: { value: '' } });
 
     expect(onChange).toHaveBeenCalledWith({ subjectId: 'sub1' });
-    expect(onChange.mock.calls[0][0]).not.toHaveProperty('language');
+    expect(onChange.mock.calls[0][0]).not.toHaveProperty('budgetMax');
   });
 });

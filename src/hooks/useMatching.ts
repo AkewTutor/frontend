@@ -15,18 +15,21 @@ export interface TutorSearchFiltersValue {
   grade?: number;
   day?: string;
   budgetMax?: string;
-  language?: string;
 }
 
-// GET /matching/tutors/search. Never fires on an empty filter set; every filter change re-keys.
+// GET /matching/tutors/search. The API requires a subject, so this never fires without one;
+// every filter change re-keys. `budgetMax` is sent as the API's `budget` param.
 export function useSearchTutors(filters: TutorSearchFiltersValue) {
   return useQuery({
     queryKey: [QUERY_KEYS.TUTOR_SEARCH, filters],
-    queryFn: () =>
-      api
-        .get<{ tutors: TutorSearchResult[] }>('/matching/tutors/search', { params: filters })
-        .then((r) => r.data),
-    enabled: Object.values(filters).some(Boolean),
+    queryFn: () => {
+      const { budgetMax, ...rest } = filters;
+      const params = budgetMax ? { ...rest, budget: budgetMax } : rest;
+      return api
+        .get<{ tutors: TutorSearchResult[] }>('/matching/tutors/search', { params })
+        .then((r) => r.data);
+    },
+    enabled: !!filters.subjectId,
   });
 }
 
@@ -40,6 +43,8 @@ export function useRecommendations(studentId?: string) {
           recommendations: TutorRecommendation[];
           matchRequestId: string;
           zeroMatchSince: string | null;
+          // True when the student has no subject and no subjects of interest to match on.
+          needsProfile?: boolean;
         }>('/matching/tutors/recommendations', { params: { studentId } })
         .then((r) => r.data),
   });
@@ -61,7 +66,7 @@ export function useSelectTutor() {
   return useMutation<
     { cohortId: string; status: string },
     AxiosError,
-    { tutorId: string; studentId?: string }
+    { tutorId: string; studentId?: string; subjectId?: string }
   >({
     mutationFn: (body) => api.post('/matching/select-tutor', body).then((r) => r.data),
   });
@@ -70,12 +75,17 @@ export function useSelectTutor() {
 // POST /matching/no-exact-match (UC-25, manual Path B trigger).
 export function useNoExactMatch() {
   return useMutation<
-    { matchRequestId: string; status: 'SEARCHING' },
+    { matchRequestId: string; status: 'PENDING_ADMIN_ASSIGNMENT' },
     AxiosError,
-    string | undefined
+    { studentId?: string; subjectId?: string } | undefined
   >({
-    mutationFn: (studentId) =>
-      api.post('/matching/no-exact-match', { studentId }).then((r) => r.data),
+    mutationFn: (body) =>
+      api
+        .post('/matching/no-exact-match', {
+          studentId: body?.studentId,
+          subjectId: body?.subjectId,
+        })
+        .then((r) => r.data),
   });
 }
 
@@ -91,8 +101,9 @@ export function useRequestGroupFormat() {
 export function useMyMatchRequests() {
   return useQuery<{ requests: MatchRequest[] }, AxiosError>({
     queryKey: [QUERY_KEYS.MATCH_REQUESTS],
+    // The API returns the single in-progress request; the page renders a list.
     queryFn: () =>
-      api.get<{ requests: MatchRequest[] }>('/matching/requests/me').then((r) => r.data),
+      api.get<MatchRequest>('/matching/requests/me').then((r) => ({ requests: [r.data] })),
     refetchInterval: 30_000,
     // 404 = "No match request in progress" (API doc): a normal state, not worth retrying.
     retry: (failureCount, error) => error.response?.status !== 404 && failureCount < 1,

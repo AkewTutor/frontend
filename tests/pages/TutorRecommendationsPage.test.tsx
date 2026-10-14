@@ -34,12 +34,21 @@ function mockData(recommendations: TutorRecommendation[], zeroMatchSince: string
   });
 }
 
+function mockNeedsProfile() {
+  useRecommendationsMock.mockReturnValue({
+    data: { recommendations: [], matchRequestId: null, zeroMatchSince: null, needsProfile: true },
+    isLoading: false,
+    isError: false,
+  });
+}
+
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/student/recommendations']}>
       <Routes>
         <Route path="/student/recommendations" element={<TutorRecommendationsPage />} />
         <Route path="/student/group-status" element={<p>group status page</p>} />
+        <Route path="/student/profile" element={<p>profile page</p>} />
       </Routes>
     </MemoryRouter>
   );
@@ -50,6 +59,17 @@ beforeEach(() => {
 });
 
 describe('TutorRecommendationsPage', () => {
+  it('asks for the profile instead of the no-exact-match button when nothing can be matched', () => {
+    mockNeedsProfile();
+    renderPage();
+    expect(screen.getByText(/subjects of interest/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /complete my profile/i })).toHaveAttribute(
+      'href',
+      '/student/profile'
+    );
+    expect(screen.queryByRole('button', { name: /no exact match/i })).toBeNull();
+  });
+
   it('renders one card per recommendation and no NoExactMatchButton', () => {
     mockData([tutor, { ...tutor, tutorId: 't2', name: 'Abel Kebede' }]);
     renderPage();
@@ -88,7 +108,7 @@ describe('TutorRecommendationsPage', () => {
     selectMutate.mockImplementation((_body, opts) => opts.onError({ response: { status: 409 } }));
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /select/i }));
-    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/no longer available/i));
+    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/pending or active match/i));
     expect(screen.getByText('Selam Tesfaye')).toBeInTheDocument();
     expect(screen.queryByText('group status page')).toBeNull();
   });

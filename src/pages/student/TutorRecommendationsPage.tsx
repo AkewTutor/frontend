@@ -1,10 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import NoExactMatchButton from '@/components/matching/NoExactMatchButton';
 import TutorRecommendationCard from '@/components/matching/TutorRecommendationCard';
 import { ROUTES } from '@/constants';
 import { useNoExactMatch, useRecommendations, useSelectTutor } from '@/hooks/useMatching';
+import { selectTutorErrorMessage } from '@/utils/selectTutorError';
 
 export default function TutorRecommendationsPage() {
   const navigate = useNavigate();
@@ -24,15 +25,7 @@ export default function TutorRecommendationsPage() {
       { tutorId },
       {
         onSuccess: () => navigate(ROUTES.STUDENT_GROUP_STATUS),
-        onError: (error) => {
-          if (error.response?.status === 409) {
-            toast.error(
-              'This tutor is no longer available. Please review the list and choose again.'
-            );
-          } else {
-            toast.error('Could not select this tutor. Please try again.');
-          }
-        },
+        onError: (error) => toast.error(selectTutorErrorMessage(error)),
       }
     );
   };
@@ -47,7 +40,19 @@ export default function TutorRecommendationsPage() {
   return (
     <div className="flex flex-col gap-space-md p-6">
       <h1 className="text-l font-bold">Recommended tutors</h1>
-      {data.recommendations.length === 0 ? (
+      {data.needsProfile ? (
+        <div className="flex flex-col items-start gap-3">
+          <p>Add your subjects of interest to your profile to get tutor recommendations.</p>
+          <div className="flex gap-3">
+            <Link className="underline" to={ROUTES.STUDENT_PROFILE}>
+              Complete my profile
+            </Link>
+            <Link className="underline" to={ROUTES.STUDENT_FIND_TUTOR}>
+              Find a tutor
+            </Link>
+          </div>
+        </div>
+      ) : data.recommendations.length === 0 ? (
         <NoExactMatchButton zeroMatchSince={data.zeroMatchSince} onTrigger={handleNoExactMatch} />
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
