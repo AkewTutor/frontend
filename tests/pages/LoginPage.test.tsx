@@ -128,6 +128,29 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText(/email or phone/i)).not.toBeDisabled();
   });
 
+  it('403 without a user id (suspended) shows the server message and does not redirect', async () => {
+    const user = userEvent.setup();
+    post.mockRejectedValue(
+      new AxiosError('Error', 'ERR', undefined, undefined, {
+        status: 403,
+        statusText: '',
+        headers: {},
+        config: {} as never,
+        data: { message: 'This account has been suspended. Please contact support.' },
+      })
+    );
+    render(<TestSetup initialEntry={ROUTES.LOGIN} />);
+
+    await user.type(screen.getByLabelText(/email or phone/i), 'me@test.com');
+    await user.type(screen.getByLabelText(/password/i), 'secret');
+    await user.click(screen.getByRole('button', { name: /sign in/i }));
+
+    expect(
+      await screen.findByText('This account has been suspended. Please contact support.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled();
+  });
+
   it('Submitting state disables the button and shows a spinner', async () => {
     const user = userEvent.setup();
     let resolvePost: (v?: unknown) => void = () => {};
