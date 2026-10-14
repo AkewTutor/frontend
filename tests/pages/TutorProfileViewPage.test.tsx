@@ -38,9 +38,9 @@ function mockProfile(data: TutorProfileView) {
   });
 }
 
-function renderPage() {
+function renderPage(url = '/student/tutors/t1') {
   return render(
-    <MemoryRouter initialEntries={['/student/tutors/t1']}>
+    <MemoryRouter initialEntries={[url]}>
       <Routes>
         <Route path="/student/tutors/:tutorId" element={<TutorProfileViewPage />} />
         <Route path="/student/group-status" element={<p>group status page</p>} />
@@ -127,6 +127,17 @@ describe('TutorProfileViewPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Select this tutor' }));
     expect(selectMutate).toHaveBeenCalledWith({ tutorId: 't1' }, expect.any(Object));
     expect(screen.getByText('group status page')).toBeInTheDocument();
+  });
+
+  it('sends the searched subject when the link carries ?subjectId', () => {
+    mockProfile(profile);
+    selectMutate.mockImplementation((_body, opts) => opts.onSuccess());
+    renderPage('/student/tutors/t1?subjectId=sub-1');
+    fireEvent.click(screen.getByRole('button', { name: 'Select this tutor' }));
+    expect(selectMutate).toHaveBeenCalledWith(
+      { tutorId: 't1', subjectId: 'sub-1' },
+      expect.any(Object)
+    );
   });
 
   it('toasts on 409 and stays on the page', () => {

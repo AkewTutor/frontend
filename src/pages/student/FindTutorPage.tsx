@@ -1,12 +1,18 @@
-import { generatePath, Link, useSearchParams } from 'react-router-dom';
+import { generatePath, Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import EmptyState from '@/components/common/EmptyState';
+import NoExactMatchButton from '@/components/matching/NoExactMatchButton';
 import TutorSearchFilters from '@/components/matching/TutorSearchFilters';
 import { ROUTES } from '@/constants';
-import { useSearchTutors, type TutorSearchFiltersValue } from '@/hooks/useMatching';
+import {
+  useNoExactMatch,
+  useSearchTutors,
+  type TutorSearchFiltersValue,
+} from '@/hooks/useMatching';
 import { useSubjects } from '@/hooks/useSubjects';
 
-const KEYS = ['subjectId', 'grade', 'day', 'budgetMax', 'language'] as const;
+const KEYS = ['subjectId', 'grade', 'day', 'budgetMax'] as const;
 
 function readFilters(params: URLSearchParams): TutorSearchFiltersValue {
   const filters: Record<string, string | number> = {};
@@ -26,10 +32,13 @@ function readFilters(params: URLSearchParams): TutorSearchFiltersValue {
 export default function FindTutorPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = readFilters(searchParams);
-  const isIdle = Object.keys(filters).length === 0;
+  // The API needs a subject; without one there is nothing to search yet.
+  const isIdle = !filters.subjectId;
 
   const subjects = useSubjects();
   const search = useSearchTutors(filters);
+  const noExactMatch = useNoExactMatch();
+  const navigate = useNavigate();
 
   const handleChange = (next: TutorSearchFiltersValue) => {
     const params = new URLSearchParams();
@@ -37,6 +46,18 @@ export default function FindTutorPage() {
       if (value !== undefined && value !== '') params.set(key, String(value));
     }
     setSearchParams(params, { replace: true });
+  };
+
+  // UC-25: nothing fits, so hand the request to an admin. The search already opened the
+  // student's request for this subject.
+  const handleNoExactMatch = () => {
+    noExactMatch.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('We will look wider and assign a tutor for you.');
+        navigate(ROUTES.STUDENT_GROUP_STATUS);
+      },
+      onError: () => toast.error('Could not start the wider search. Please try again.'),
+    });
   };
 
   return (
@@ -50,24 +71,35 @@ export default function FindTutorPage() {
       />
 
       {isIdle ? (
-        <EmptyState message="Start by selecting a filter to see tutors." />
+        <EmptyState message="Select a subject to see tutors." />
       ) : search.isLoading ? (
         <p>Searching…</p>
       ) : search.isError ? (
         <p>We couldn&apos;t load tutors. Please try again later.</p>
       ) : !search.data || search.data.tutors.length === 0 ? (
-        <EmptyState message="No tutors match these filters." />
+        <div className="flex flex-col items-start gap-3">
+          <EmptyState message="No tutors match these filters." />
+          {(filters.day !== undefined || filters.budgetMax !== undefined) && (
+            <p className="text-s text-muted-foreground">
+              Your day or budget filter may be hiding tutors. Try clearing it before asking us to
+              widen your search.
+            </p>
+          )}
+          <NoExactMatchButton zeroMatchSince={null} onTrigger={handleNoExactMatch} />
+        </div>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {search.data.tutors.map((tutor) => (
             <li key={tutor.tutorId}>
               <Link
-                to={generatePath(ROUTES.STUDENT_TUTOR_VIEW, { tutorId: tutor.tutorId })}
+                to={`${generatePath(ROUTES.STUDENT_TUTOR_VIEW, { tutorId: tutor.tutorId })}?subjectId=${filters.subjectId}`}
                 className="block rounded-m border bg-white p-4 shadow-card transition-colors hover:bg-accent/20"
               >
                 <p className="text-m font-semibold">{tutor.name}</p>
                 <p className="text-s text-muted-foreground">
-                  {tutor.pricePerStudentPerHour} per student per hour
+                  {tutor.pricePerStudentPerHour
+                    ? `${tutor.pricePerStudentPerHour} per student per hour`
+                    : 'Price not available yet'}
                 </p>
               </Link>
             </li>

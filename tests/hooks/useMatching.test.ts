@@ -42,7 +42,24 @@ describe('useSearchTutors', () => {
     expect(mockedApi.get).not.toHaveBeenCalled();
   });
 
-  it('fires once any single filter is set', async () => {
+  it('does not fire without a subject, even when other filters are set', () => {
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useSearchTutors({ grade: 5, day: '1' }), { wrapper });
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(mockedApi.get).not.toHaveBeenCalled();
+  });
+
+  it('sends budgetMax as the API budget param', async () => {
+    mockedApi.get.mockResolvedValue({ data: { tutors: [] } });
+    const { wrapper } = setup();
+    renderHook(() => useSearchTutors({ subjectId: 'x', budgetMax: '300' }), { wrapper });
+    await waitFor(() => expect(mockedApi.get).toHaveBeenCalledTimes(1));
+    expect(mockedApi.get).toHaveBeenCalledWith('/matching/tutors/search', {
+      params: { subjectId: 'x', budget: '300' },
+    });
+  });
+
+  it('fires once a subject is set', async () => {
     mockedApi.get.mockResolvedValue({ data: { tutors: [] } });
     const { wrapper } = setup();
     renderHook(() => useSearchTutors({ subjectId: 'x' }), { wrapper });
@@ -174,6 +191,16 @@ describe('useRequestGroupFormat', () => {
 });
 
 describe('useMyMatchRequests', () => {
+  it('wraps the single in-progress request the API returns into a list', async () => {
+    const request = { id: 'r1', format: 'ONE_TO_ONE', status: 'SEARCHING', zeroMatchSince: null };
+    mockedApi.get.mockResolvedValue({ data: request });
+    const { wrapper } = setup();
+
+    const { result } = renderHook(() => useMyMatchRequests(), { wrapper });
+
+    await waitFor(() => expect(result.current.data).toEqual({ requests: [request] }));
+  });
+
   it('polls at 30s', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     mockedApi.get.mockResolvedValue({ data: { requests: [] } });

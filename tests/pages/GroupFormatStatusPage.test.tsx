@@ -84,6 +84,12 @@ describe('GroupFormatStatusPage', () => {
     expect(screen.getByRole('tab', { name: 'Waiting' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('treats PENDING_ADMIN_APPROVAL (a just-selected 1-to-1 tutor) as waiting', () => {
+    mockCohorts([{ ...baseCohort, status: 'PENDING_ADMIN_APPROVAL' }]);
+    renderPage();
+    expect(screen.getByRole('tab', { name: 'Waiting' })).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('has no manual refresh affordance', () => {
     mockCohorts([baseCohort]);
     renderPage();
