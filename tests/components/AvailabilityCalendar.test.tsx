@@ -117,6 +117,7 @@ describe('AvailabilityCalendar', () => {
 
   it('sends a non-recurring slot with an Ethiopian date and no dayOfWeek', () => {
     const { onAddSlot } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Tue 9:00 AM'));
     fireEvent.click(screen.getByLabelText('Recurring weekly'));
     fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-02-10' } });
@@ -142,9 +143,9 @@ describe('AvailabilityCalendar', () => {
 
   it('blocks a weekly slot that crosses 3:00 AM (midnight UTC)', () => {
     setup();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '02:00' } });
-    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '04:00' } });
     expect(screen.getByRole('alert')).toHaveTextContent('cannot cross 3:00 AM');
     expect(screen.getByRole('button', { name: 'Add slot' })).toBeDisabled();
   });
@@ -160,6 +161,7 @@ describe('AvailabilityCalendar', () => {
       },
     ]);
     // Sunday 22:00 UTC is Monday 1:00 AM in Ethiopia
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     expect(screen.getByText(/Remove Mon 1:00 AM – 2:00 AM/)).toBeInTheDocument();
   });
