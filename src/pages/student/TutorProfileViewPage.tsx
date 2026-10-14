@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ROUTES } from '@/constants';
 import { useSelectTutor, useTutorFullProfile } from '@/hooks/useMatching';
+import { selectTutorErrorMessage } from '@/utils/selectTutorError';
 
 function initials(name: string) {
   return name
@@ -48,15 +49,7 @@ export default function TutorProfileViewPage() {
       subjectId ? { tutorId: data.tutorId, subjectId } : { tutorId: data.tutorId },
       {
         onSuccess: () => navigate(ROUTES.STUDENT_GROUP_STATUS),
-        onError: (err) => {
-          if (err.response?.status === 409) {
-            toast.error(
-              'This tutor is no longer available. Please review the list and choose again.'
-            );
-          } else {
-            toast.error('Could not select this tutor. Please try again.');
-          }
-        },
+        onError: (err) => toast.error(selectTutorErrorMessage(err)),
       }
     );
   };

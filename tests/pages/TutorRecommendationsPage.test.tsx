@@ -108,7 +108,7 @@ describe('TutorRecommendationsPage', () => {
     selectMutate.mockImplementation((_body, opts) => opts.onError({ response: { status: 409 } }));
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: /select/i }));
-    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/no longer available/i));
+    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/pending or active match/i));
     expect(screen.getByText('Selam Tesfaye')).toBeInTheDocument();
     expect(screen.queryByText('group status page')).toBeNull();
   });

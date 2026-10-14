@@ -5,6 +5,7 @@ import NoExactMatchButton from '@/components/matching/NoExactMatchButton';
 import TutorRecommendationCard from '@/components/matching/TutorRecommendationCard';
 import { ROUTES } from '@/constants';
 import { useNoExactMatch, useRecommendations, useSelectTutor } from '@/hooks/useMatching';
+import { selectTutorErrorMessage } from '@/utils/selectTutorError';
 
 export default function TutorRecommendationsPage() {
   const navigate = useNavigate();
@@ -24,17 +25,7 @@ export default function TutorRecommendationsPage() {
       { tutorId },
       {
         onSuccess: () => navigate(ROUTES.STUDENT_GROUP_STATUS),
-        onError: (error) => {
-          if (error.response?.status === 409) {
-            toast.error(
-              'This tutor is no longer available. Please review the list and choose again.'
-            );
-          } else if (error.response?.status === 400) {
-            toast.error('Choose a subject first on the Find a tutor page.');
-          } else {
-            toast.error('Could not select this tutor. Please try again.');
-          }
-        },
+        onError: (error) => toast.error(selectTutorErrorMessage(error)),
       }
     );
   };
