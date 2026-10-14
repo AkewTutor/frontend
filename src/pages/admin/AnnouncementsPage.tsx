@@ -9,7 +9,7 @@ import { useAnnouncements, useCreateAnnouncement } from '@/hooks/useAdminAnnounc
 import { useAuthStore } from '@/store/auth.store';
 import type { Role } from '@/types';
 
-const ROLES: Role[] = ['STUDENT', 'PARENT', 'TUTOR', 'ADMIN'];
+const ROLES: Role[] = ['STUDENT', 'PARENT', 'TUTOR'];
 
 interface FormValues {
   title: string;
