@@ -13,6 +13,11 @@ export default function AvailabilityPage() {
     return <p className="p-6">We couldn&apos;t load your availability. Please try again later.</p>;
   }
 
+  function apiMessage(error: unknown, fallback: string) {
+    const e = error as { response?: { data?: { message?: string } } };
+    return e.response?.data?.message ?? fallback;
+  }
+
   return (
     <div className="flex flex-col gap-space-md p-6">
       <h1 className="text-l font-bold">My availability</h1>
@@ -20,12 +25,14 @@ export default function AvailabilityPage() {
         slots={data.slots}
         onAddSlot={(slot) =>
           add.mutate(slot, {
-            onError: () => toast.error('Could not save that slot. It may overlap an existing one.'),
+            onSuccess: () => toast.success('Slot added to your calendar'),
+            onError: (error) => toast.error(apiMessage(error, 'Could not save that slot.')),
           })
         }
         onRemoveSlot={(slotId) =>
           remove.mutate(slotId, {
-            onError: () => toast.error('Could not remove that slot. Please try again.'),
+            onSuccess: () => toast.success('Slot removed'),
+            onError: (error) => toast.error(apiMessage(error, 'Could not remove that slot.')),
           })
         }
       />
