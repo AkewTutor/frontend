@@ -34,7 +34,7 @@ beforeEach(() => {
 describe('AvailabilityPage', () => {
   it('wires adding a slot to useAddSlot', () => {
     render(<AvailabilityPage />);
-    fireEvent.click(screen.getByRole('button', { name: 'Tue 9:00 AM' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Tue 4:00 PM' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     expect(mocks.add.mutate).toHaveBeenCalledTimes(1);
     expect(mocks.add.mutate.mock.calls[0][0]).toMatchObject({ dayOfWeek: 2, isRecurring: true });
