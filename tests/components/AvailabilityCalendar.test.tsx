@@ -146,6 +146,7 @@ describe('AvailabilityCalendar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '02:00' } });
+    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '04:00' } });
     expect(screen.getByRole('alert')).toHaveTextContent('cannot cross 3:00 AM');
     expect(screen.getByRole('button', { name: 'Add slot' })).toBeDisabled();
   });
