@@ -15,7 +15,19 @@ import {
 } from '@/lib/ethiopianTime';
 import type { AvailabilitySlot } from '@/types';
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+type HourRange = 'pm' | 'am' | 'all';
+const PM_HOURS = Array.from({ length: 12 }, (_, i) => i + 12);
+const AM_HOURS = Array.from({ length: 12 }, (_, i) => i);
+const HOURS_BY_RANGE: Record<HourRange, number[]> = {
+  pm: PM_HOURS,
+  am: AM_HOURS,
+  all: [...PM_HOURS, ...AM_HOURS],
+};
+const RANGE_OPTIONS: { value: HourRange; label: string; title: string }[] = [
+  { value: 'pm', label: 'PM', title: '12:00 PM – 11:00 PM' },
+  { value: 'am', label: 'AM', title: '12:00 AM – 11:00 AM' },
+  { value: 'all', label: 'All', title: 'All 24 hours, PM first' },
+];
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const toMinutes = (hhmm: string) => {
@@ -210,6 +222,7 @@ export default function AvailabilityCalendar({
   const today = utcToEat(now);
   const [selection, setSelection] = useState<{ day: number; hour: number } | null>(null);
   const [removing, setRemoving] = useState<AvailabilitySlot | null>(null);
+  const [range, setRange] = useState<HourRange>('pm');
 
   // Before any click, the form defaults to today (Ethiopia time) and the next full hour.
   // Captured once, so the live clock never resets a form the tutor is typing in.
@@ -239,6 +252,13 @@ export default function AvailabilityCalendar({
   };
 
   const removingPos = removing ? slotToEat(removing) : null;
+  const hiddenCount =
+    range === 'all'
+      ? 0
+      : slots.filter((s) => {
+          const h = Math.floor(slotToEat(s).startMin / 60);
+          return range === 'pm' ? h < 12 : h >= 12;
+        }).length;
 
   return (
     <div className="space-y-space-md">
@@ -279,8 +299,30 @@ export default function AvailabilityCalendar({
         onSubmit={onAddSlot}
       />
 
-      <div className="max-h-[480px] overflow-auto">
-        <div className="grid min-w-[600px] grid-cols-[4.5rem_repeat(7,minmax(0,1fr))] text-s">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-s text-muted-foreground">Show:</span>
+        {RANGE_OPTIONS.map((o) => (
+          <Button
+            key={o.value}
+            type="button"
+            size="sm"
+            variant={range === o.value ? 'default' : 'secondary'}
+            aria-pressed={range === o.value}
+            title={o.title}
+            onClick={() => setRange(o.value)}
+          >
+            {o.label}
+          </Button>
+        ))}
+        {hiddenCount > 0 && (
+          <span className="text-s text-muted-foreground">
+            {hiddenCount} slot{hiddenCount === 1 ? '' : 's'} in the other half of the day
+          </span>
+        )}
+      </div>
+
+      <div className="max-h-[420px] overflow-auto">
+        <div className="grid min-w-[520px] grid-cols-[4rem_repeat(7,minmax(0,1fr))] text-xs">
           <div />
           {WEEKDAYS.map((d, day) => (
             <div
@@ -291,7 +333,7 @@ export default function AvailabilityCalendar({
               {day === today.day ? ' (today)' : ''}
             </div>
           ))}
-          {HOURS.map((hour) => (
+          {HOURS_BY_RANGE[range].map((hour) => (
             <div key={hour} className="contents">
               <div
                 className={`p-1 ${hour === currentHour ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}
@@ -307,7 +349,7 @@ export default function AvailabilityCalendar({
                     type="button"
                     aria-label={`${d} ${formatMinutesAmPm(hour * 60)}`}
                     onClick={() => handleCell(day, hour)}
-                    className={`h-8 border border-border ${occupied ? 'bg-accent' : 'bg-white hover:bg-muted'} ${isNow ? 'ring-2 ring-inset ring-primary' : ''}`}
+                    className={`h-6 border border-border ${occupied ? 'bg-accent' : 'bg-white hover:bg-muted'} ${isNow ? 'ring-2 ring-inset ring-primary' : ''}`}
                   />
                 );
               })}
