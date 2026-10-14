@@ -48,16 +48,19 @@ export default function FindTutorPage() {
     setSearchParams(params, { replace: true });
   };
 
-  // UC-25: nothing fits, so hand the request to an admin. The search already opened the
-  // student's request for this subject.
+  // UC-25: nothing fits, so hand the request to an admin for the subject that was searched
+  // (searching is read-only and opens no request of its own).
   const handleNoExactMatch = () => {
-    noExactMatch.mutate(undefined, {
-      onSuccess: () => {
-        toast.success('We will look wider and assign a tutor for you.');
-        navigate(ROUTES.STUDENT_GROUP_STATUS);
-      },
-      onError: () => toast.error('Could not start the wider search. Please try again.'),
-    });
+    noExactMatch.mutate(
+      { subjectId: filters.subjectId },
+      {
+        onSuccess: () => {
+          toast.success('We will look wider and assign a tutor for you.');
+          navigate(ROUTES.STUDENT_GROUP_STATUS);
+        },
+        onError: () => toast.error('Could not start the wider search. Please try again.'),
+      }
+    );
   };
 
   return (

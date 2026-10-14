@@ -87,6 +87,7 @@ describe('FindTutorPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /no exact match/i }));
 
     expect(mutate).toHaveBeenCalledTimes(1);
+    expect(mutate).toHaveBeenCalledWith({ subjectId: 's1' }, expect.any(Object));
     expect(screen.getByText('Group status')).toBeInTheDocument();
   });
 

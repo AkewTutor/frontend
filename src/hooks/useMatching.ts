@@ -77,10 +77,15 @@ export function useNoExactMatch() {
   return useMutation<
     { matchRequestId: string; status: 'PENDING_ADMIN_ASSIGNMENT' },
     AxiosError,
-    string | undefined
+    { studentId?: string; subjectId?: string } | undefined
   >({
-    mutationFn: (studentId) =>
-      api.post('/matching/no-exact-match', { studentId }).then((r) => r.data),
+    mutationFn: (body) =>
+      api
+        .post('/matching/no-exact-match', {
+          studentId: body?.studentId,
+          subjectId: body?.subjectId,
+        })
+        .then((r) => r.data),
   });
 }
 

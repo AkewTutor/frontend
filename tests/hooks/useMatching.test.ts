@@ -160,16 +160,19 @@ describe('useSelectTutor', () => {
 });
 
 describe('useNoExactMatch', () => {
-  it('posts the studentId and writes nothing to the cache', async () => {
+  it('posts the studentId and subjectId and writes nothing to the cache', async () => {
     mockedApi.post.mockResolvedValue({ data: { matchRequestId: 'm1', status: 'SEARCHING' } });
     const { qc, wrapper } = setup();
     const spy = vi.spyOn(qc, 'invalidateQueries');
 
     const { result } = renderHook(() => useNoExactMatch(), { wrapper });
-    result.current.mutate('s1');
+    result.current.mutate({ studentId: 's1', subjectId: 'sub1' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(mockedApi.post).toHaveBeenCalledWith('/matching/no-exact-match', { studentId: 's1' });
+    expect(mockedApi.post).toHaveBeenCalledWith('/matching/no-exact-match', {
+      studentId: 's1',
+      subjectId: 'sub1',
+    });
     expect(spy).not.toHaveBeenCalled();
   });
 });
