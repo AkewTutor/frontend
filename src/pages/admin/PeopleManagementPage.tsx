@@ -13,8 +13,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { useSuspendAccount, useUsers, type RestrictionType } from '@/hooks/useAdminPeople';
+import {
+  useReactivateAccount,
+  useSuspendAccount,
+  useUsers,
+  type RestrictionType,
+} from '@/hooks/useAdminPeople';
 import type { AdminUser, Role } from '@/types';
+import StatusBadge from '@/components/common/StatusBadge';
 
 const ROLES: Role[] = ['STUDENT', 'PARENT', 'TUTOR', 'ADMIN'];
 
@@ -27,6 +33,7 @@ export default function PeopleManagementPage() {
 
   const { data, isLoading, isError } = useUsers(page, roleFilter || undefined);
   const suspend = useSuspendAccount();
+  const reactivate = useReactivateAccount();
 
   if (isLoading) return <p className="p-6">Loading people…</p>;
   if (isError || !data) {
@@ -89,6 +96,7 @@ export default function PeopleManagementPage() {
               <TableHead>Role</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead>Joined</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -99,17 +107,46 @@ export default function PeopleManagementPage() {
                 <TableCell>{u.email ?? u.phone ?? '—'}</TableCell>
                 <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setTarget(u);
-                      setReason('');
-                    }}
-                  >
-                    Suspend
-                  </Button>
+                  <StatusBadge
+                    status={u.status}
+                    severity={
+                      u.status === 'SUSPENDED'
+                        ? 'danger'
+                        : u.status === 'RESTRICTED'
+                          ? 'warning'
+                          : 'success'
+                    }
+                  />
+                </TableCell>
+                <TableCell>
+                {u.status === 'ACTIVE' ? (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setTarget(u);
+                        setReason('');
+                      }}
+                    >
+                      Suspend
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={reactivate.isPending}
+                      onClick={() =>
+                        reactivate.mutate(u.id, {
+                          onSuccess: () => toast.success('Account reactivated.'),
+                          onError: () => toast.error('Could not reactivate this account.'),
+                        })
+                      }
+                    >
+                      Reactivate
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
