@@ -35,3 +35,26 @@ export function useCreateAnnouncement() {
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.ANNOUNCEMENTS] }),
   });
 }
+
+export interface UpdateAnnouncementBody {
+  title?: string;
+  body?: string;
+}
+
+export function useUpdateAnnouncement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...changes }: { id: string } & UpdateAnnouncementBody) =>
+      api.patch<Announcement>(`/admin/announcements/${id}`, changes).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.ANNOUNCEMENTS] }),
+  });
+}
+
+export function useDeleteAnnouncement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete<{ id: string }>(`/admin/announcements/${id}`).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.ANNOUNCEMENTS] }),
+  });
+}
