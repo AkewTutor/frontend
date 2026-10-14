@@ -57,10 +57,20 @@ describe('AvailabilityCalendar', () => {
     expect(screen.getByLabelText('Current Ethiopia time')).toHaveTextContent('3:00:00 PM');
   });
 
-  it('labels the grid in 12-hour Ethiopia time', () => {
+  it('shows PM hours by default and AM hours behind the AM toggle', () => {
     setup();
     expect(cell('Mon 4:00 PM')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Sun 12:00 AM' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     expect(cell('Sun 12:00 AM')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mon 4:00 PM' })).not.toBeInTheDocument();
+  });
+
+  it('lists PM rows above AM rows in the All view', () => {
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'All' }));
+    const labels = screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'));
+    expect(labels.indexOf('Mon 12:00 PM')).toBeLessThan(labels.indexOf('Mon 12:00 AM'));
   });
 
   it('fills the form when an empty cell is clicked, and keeps it visible', () => {
@@ -94,6 +104,7 @@ describe('AvailabilityCalendar', () => {
 
   it('sends the UTC weekday, so Monday 1 AM in Ethiopia is Sunday in UTC', () => {
     const { onAddSlot } = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'AM' }));
     fireEvent.click(cell('Mon 1:00 AM'));
     fireEvent.click(screen.getByRole('button', { name: 'Add slot' }));
     expect(onAddSlot).toHaveBeenCalledWith({
