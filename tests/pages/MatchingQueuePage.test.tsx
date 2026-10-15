@@ -35,6 +35,21 @@ function item(overrides: Partial<MatchingQueueItem> = {}): MatchingQueueItem {
 }
 
 describe('ApprovalQueueTable', () => {
+  it('shows the tutor email, falling back to the tutor id', () => {
+    render(
+      <ApprovalQueueTable
+        items={[
+          item({ cohortId: 'a', tutorId: 'tid-a', tutorEmail: 't4@test.local' }),
+          item({ cohortId: 'b', tutorId: 'tid-b' }),
+        ]}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+      />
+    );
+    expect(screen.getByText('t4@test.local')).toBeInTheDocument();
+    expect(screen.getByText('tid-b')).toBeInTheDocument();
+  });
+
   it('marks only rows with adminOverdueNotifiedAt as overdue', () => {
     render(
       <ApprovalQueueTable
