@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import EmptyState from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Table,
@@ -27,11 +28,13 @@ const ROLES: Role[] = ['STUDENT', 'PARENT', 'TUTOR', 'ADMIN'];
 export default function PeopleManagementPage() {
   const [page, setPage] = useState(1);
   const [roleFilter, setRoleFilter] = useState<Role | ''>('');
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
   const [target, setTarget] = useState<AdminUser | null>(null);
   const [reason, setReason] = useState('');
   const [restrictionType, setRestrictionType] = useState<RestrictionType>('SUSPENDED');
 
-  const { data, isLoading, isError } = useUsers(page, roleFilter || undefined);
+  const { data, isLoading, isError } = useUsers(page, roleFilter || undefined, search || undefined);
   const suspend = useSuspendAccount();
   const reactivate = useReactivateAccount();
 
@@ -47,6 +50,11 @@ export default function PeopleManagementPage() {
     setTarget(null);
     setReason('');
     setRestrictionType('SUSPENDED');
+  };
+
+  const applySearch = (value: string) => {
+    setSearch(value.trim());
+    setPage(1);
   };
 
   const confirmSuspend = () => {
@@ -66,6 +74,41 @@ export default function PeopleManagementPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-space-md p-6">
       <h1 className="text-l font-bold">People</h1>
+
+      <form
+        className="flex flex-col gap-1"
+        onSubmit={(e) => {
+          e.preventDefault();
+          applySearch(searchInput);
+        }}
+      >
+        <Label htmlFor="peopleSearch">Search</Label>
+        <div className="flex gap-3">
+          <Input
+            id="peopleSearch"
+            className="w-64"
+            placeholder="Email or phone"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <Button type="submit" size="sm">
+            Search
+          </Button>
+          {search && (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setSearchInput('');
+                applySearch('');
+              }}
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+      </form>
 
       <div className="flex flex-col gap-1">
         <Label htmlFor="roleFilter">Role</Label>
@@ -119,7 +162,7 @@ export default function PeopleManagementPage() {
                   />
                 </TableCell>
                 <TableCell>
-                {u.status === 'ACTIVE' ? (
+                  {u.status === 'ACTIVE' ? (
                     <Button
                       type="button"
                       variant="secondary"
