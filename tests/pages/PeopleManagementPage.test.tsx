@@ -45,9 +45,40 @@ describe('PeopleManagementPage', () => {
 
   it('re-queries with the selected role filter', () => {
     render(<PeopleManagementPage />);
-    expect(mocks.users).toHaveBeenLastCalledWith(1, undefined);
+    expect(mocks.users).toHaveBeenLastCalledWith(1, undefined, undefined);
     fireEvent.change(screen.getByLabelText('Role'), { target: { value: 'TUTOR' } });
-    expect(mocks.users).toHaveBeenLastCalledWith(1, 'TUTOR');
+    expect(mocks.users).toHaveBeenLastCalledWith(1, 'TUTOR', undefined);
+  });
+
+  it('searches on submit with a trimmed term', () => {
+    render(<PeopleManagementPage />);
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: '  amy@b.co ' } });
+    expect(mocks.users).toHaveBeenLastCalledWith(1, undefined, undefined);
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(mocks.users).toHaveBeenLastCalledWith(1, undefined, 'amy@b.co');
+  });
+
+  it('goes back to page 1 when a search is submitted', () => {
+    mocks.users.mockReturnValue({
+      data: { users: [user], page: 1, limit: 20, total: 60 },
+      isLoading: false,
+      isError: false,
+    });
+    render(<PeopleManagementPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(mocks.users).toHaveBeenLastCalledWith(2, undefined, undefined);
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'amy' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(mocks.users).toHaveBeenLastCalledWith(1, undefined, 'amy');
+  });
+
+  it('Clear empties the box and removes the search term', () => {
+    render(<PeopleManagementPage />);
+    fireEvent.change(screen.getByLabelText('Search'), { target: { value: 'amy' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(screen.getByLabelText('Search')).toHaveValue('');
+    expect(mocks.users).toHaveBeenLastCalledWith(1, undefined, undefined);
   });
 
   it('does not suspend until a non-empty reason is entered', () => {
