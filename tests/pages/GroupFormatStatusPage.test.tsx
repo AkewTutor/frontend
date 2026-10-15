@@ -152,4 +152,10 @@ describe('GroupFormatStatusPage', () => {
     renderPage();
     expect(screen.getByText(/couldn.t load/i)).toBeInTheDocument();
   });
+
+  it('shows how many students have joined a forming group', () => {
+    mockCohorts([{ ...baseCohort, status: 'FORMING', memberCount: 1 }]);
+    renderPage();
+    expect(screen.getByText('1 of 3 students joined')).toBeInTheDocument();
+  });
 });
