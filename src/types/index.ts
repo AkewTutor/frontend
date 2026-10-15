@@ -187,6 +187,7 @@ export interface MatchingQueueItem {
   path: 'PATH_A' | 'PATH_B' | 'PATH_C';
   format: CohortFormat;
   tutorId: string;
+  tutorEmail?: string | null; // beyond Doc 06-api/03: shown in the admin queue
   studentIds: string[];
   createdAt: string;
   isOverdue: boolean;
