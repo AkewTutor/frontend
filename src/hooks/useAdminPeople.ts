@@ -40,6 +40,19 @@ export function useSuspendAccount() {
   });
 }
 
+// POST /admin/people/:userId/reactivate (no body). Sets status back to ACTIVE.
+// Beyond Doc 06-api/02, which only specifies suspend.
+export function useReactivateAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      api
+        .post<{ userId: string; status: 'ACTIVE' }>(`/admin/people/${userId}/reactivate`)
+        .then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.ADMIN_PEOPLE] }),
+  });
+}
+
 // PATCH /admin/people/relationships/:id. Body { status?, permissions? }; the id is never sent in the body.
 export function useEditRelationship() {
   const qc = useQueryClient();

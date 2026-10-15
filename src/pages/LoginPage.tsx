@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { roleDefaultRoute } from '@/lib/roleDefaultRoute';
 import { ROUTES } from '@/constants';
+import type { AxiosError } from 'axios';
 
 const loginSchema = z.object({
   identifier: z.string().min(1, 'Identifier is required'),
@@ -20,6 +21,13 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 function isValidRelativeReturnTo(path: string | null): boolean {
   if (!path) return false;
   return path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\');
+}
+
+// 403 with a user id in errors[0] = unverified contact (redirect to verification).
+// Any other 403 (e.g. a suspended account) is shown as a message instead.
+function unverifiedUserId(error: AxiosError | null): string | undefined {
+  if (error?.response?.status !== 403) return undefined;
+  return (error.response.data as { errors?: string[] } | undefined)?.errors?.[0];
 }
 
 export default function LoginPage() {
@@ -49,14 +57,10 @@ export default function LoginPage() {
         navigate(target, { replace: true });
       },
       onError: (error) => {
-        // 403 = correct password but contact not verified yet.
-        // The backend returns the user id in errors[0]; send them to verification.
-        if (error.response?.status === 403) {
-          const body = error.response.data as { errors?: string[] };
-          const userId = body?.errors?.[0];
-          if (userId) {
-            navigate(`${ROUTES.VERIFY_CONTACT}?userId=${encodeURIComponent(userId)}`);
-          }
+        // 403 + user id in errors[0] = correct password but contact not verified yet.
+        const userId = unverifiedUserId(error);
+        if (userId) {
+          navigate(`${ROUTES.VERIFY_CONTACT}?userId=${encodeURIComponent(userId)}`);
         }
       },
     });
@@ -97,14 +101,17 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {login.isError && login.error?.response?.status !== 403 && (
+          {login.isError && !unverifiedUserId(login.error) && (
             <div className="bg-destructive/10 p-3 rounded-md" role="alert">
               <p className="text-destructive text-sm font-medium">
                 {login.error?.response?.status === 401
                   ? 'Invalid email/phone or password'
-                  : login.error?.response?.status === 429
-                    ? 'Too many attempts. Please wait a few minutes and try again.'
-                    : 'Something went wrong. Please try again.'}
+                  : login.error?.response?.status === 403
+                    ? ((login.error.response.data as { message?: string } | undefined)?.message ??
+                      'This account cannot sign in. Please contact support.')
+                    : login.error?.response?.status === 429
+                      ? 'Too many attempts. Please wait a few minutes and try again.'
+                      : 'Something went wrong. Please try again.'}
               </p>
             </div>
           )}

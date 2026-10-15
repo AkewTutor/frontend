@@ -7,11 +7,13 @@ import type { AdminUser } from '@/types';
 const mocks = vi.hoisted(() => ({
   users: vi.fn(),
   suspend: { mutate: vi.fn(), isPending: false },
+  reactivate: { mutate: vi.fn(), isPending: false },
 }));
 
 vi.mock('@/hooks/useAdminPeople', () => ({
   useUsers: (...a: unknown[]) => mocks.users(...a),
   useSuspendAccount: () => mocks.suspend,
+  useReactivateAccount: () => mocks.reactivate,
 }));
 
 const user: AdminUser = {
@@ -20,6 +22,7 @@ const user: AdminUser = {
   email: 'tutor@b.co',
   phone: null,
   createdAt: '2026-01-05T10:00:00.000Z',
+  status: 'ACTIVE',
 };
 
 const withUsers = (users: AdminUser[]) =>
@@ -83,4 +86,13 @@ describe('PeopleManagementPage', () => {
     render(<PeopleManagementPage />);
     expect(screen.getByText('No people match this filter.')).toBeInTheDocument();
   });
+});
+
+it('shows Reactivate (not Suspend) for a suspended account and fires it', () => {
+  withUsers([{ ...user, id: 'u2', status: 'SUSPENDED' }]);
+  render(<PeopleManagementPage />);
+
+  expect(screen.queryByRole('button', { name: 'Suspend' })).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Reactivate' }));
+  expect(mocks.reactivate.mutate.mock.calls[0][0]).toBe('u2');
 });

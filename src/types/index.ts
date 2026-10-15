@@ -634,14 +634,16 @@ export interface TutorPerformancePage {
 }
 
 // ── admin people (covers Dev A's useUsers; API 02 GET /admin/people) ──
+export type UserAccountStatus = 'ACTIVE' | 'SUSPENDED' | 'RESTRICTED';
+
 export interface AdminUser {
   id: string;
   role: Role;
   email: string | null;
   phone: string | null;
+  status: UserAccountStatus;
   createdAt: string;
 }
-
 export interface AdminPeopleResponse {
   users: AdminUser[];
   page: number;
