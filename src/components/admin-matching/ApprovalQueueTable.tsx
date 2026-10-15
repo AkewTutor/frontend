@@ -63,7 +63,7 @@ export default function ApprovalQueueTable({
             >
               <TableCell>{item.path}</TableCell>
               <TableCell>{item.format}</TableCell>
-              <TableCell>{item.tutorId}</TableCell>
+              <TableCell>{item.tutorEmail ?? item.tutorId}</TableCell>
               <TableCell>{item.studentIds.length}</TableCell>
               <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
               <TableCell>
