@@ -5,7 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import api from '@/lib/axios';
 import { QUERY_KEYS } from '@/constants';
-import { useEditRelationship, useSuspendAccount, useUsers } from '@/hooks/useAdminPeople';
+import {
+  useEditRelationship,
+  useReactivateAccount,
+  useSuspendAccount,
+  useUsers,
+} from '@/hooks/useAdminPeople';
 
 vi.mock('@/lib/axios', () => ({
   default: { get: vi.fn(), post: vi.fn(), patch: vi.fn() },
@@ -70,6 +75,28 @@ describe('useSuspendAccount', () => {
     const { invalidate, wrapper } = setup();
     const { result } = renderHook(() => useSuspendAccount(), { wrapper });
     result.current.mutate({ userId: 'u1', reason: 'x', restrictionType: 'RESTRICTED' });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(invalidate).not.toHaveBeenCalled();
+  });
+});
+
+describe('useReactivateAccount', () => {
+  it('POSTs to /admin/people/:userId/reactivate with no body, resolves the data, then invalidates', async () => {
+    mockedApi.post.mockResolvedValue({ data: { userId: 'u1', status: 'ACTIVE' } });
+    const { invalidate, wrapper } = setup();
+    const { result } = renderHook(() => useReactivateAccount(), { wrapper });
+    result.current.mutate('u1');
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedApi.post).toHaveBeenCalledWith('/admin/people/u1/reactivate');
+    expect(result.current.data).toEqual({ userId: 'u1', status: 'ACTIVE' });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.ADMIN_PEOPLE] });
+  });
+
+  it('invalidates nothing on failure', async () => {
+    mockedApi.post.mockRejectedValue(new Error('User not found'));
+    const { invalidate, wrapper } = setup();
+    const { result } = renderHook(() => useReactivateAccount(), { wrapper });
+    result.current.mutate('missing');
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(invalidate).not.toHaveBeenCalled();
   });
