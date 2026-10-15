@@ -207,6 +207,7 @@ export interface Cohort {
   format: CohortFormat;
   status: 'FORMING' | 'PENDING_APPROVAL' | 'PENDING_ADMIN_APPROVAL' | 'ACTIVE' | 'ENDED';
   targetGroupSize: number;
+  memberCount?: number; // beyond Doc 06-api/03: non-ended memberships in the cohort
   groupFormationWindowExpiresAt: string | null;
   membershipStatus: 'PENDING_PAYMENT' | 'ACTIVE' | 'ENDED';
 }
