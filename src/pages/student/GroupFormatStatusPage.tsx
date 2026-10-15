@@ -93,6 +93,11 @@ export default function GroupFormatStatusPage() {
                   <span>Group ({formatLabel(cohort.format)})</span>
                   <StatusBadge status={cohort.status} />
                 </div>
+                {typeof cohort.memberCount === 'number' && (
+                  <p className="text-s text-muted-foreground">
+                    {cohort.memberCount} of {cohort.targetGroupSize} students joined
+                  </p>
+                )}
                 {cohort.groupFormationWindowExpiresAt && (
                   <p className="text-s text-muted-foreground">
                     Group formation window closes in{' '}
