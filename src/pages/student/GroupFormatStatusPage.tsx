@@ -59,12 +59,14 @@ export default function GroupFormatStatusPage() {
   }
 
   // Derived on every render (8-3 §3.6): no separate tab state, no refresh control.
-  const activeTab = cohorts.some((c) => WAITING_STATUSES.includes(c.status))
-    ? 'waiting'
-    : 'assigned';
-
   const waitingCohorts = cohorts.filter((c) => WAITING_STATUSES.includes(c.status));
   const activeCohorts = cohorts.filter((c) => c.status === 'ACTIVE');
+  // Deviation from 8-3 §3.6: with no active group, a pending match request (e.g. after a
+  // format switch) also counts as waiting.
+  const activeTab =
+    waitingCohorts.length > 0 || (activeCohorts.length === 0 && requests.length > 0)
+      ? 'waiting'
+      : 'assigned';
   const switchCohort = activeCohorts[0] ?? cohorts[0];
 
   return (
