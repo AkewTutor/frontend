@@ -90,6 +90,18 @@ describe('GroupFormatStatusPage', () => {
     expect(screen.getByRole('tab', { name: 'Waiting' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('selects Waiting when only a match request is pending and no group is active', () => {
+    mockCohorts([]);
+    useMyMatchRequestsMock.mockReturnValue({
+      data: { requests: [{ id: 'mr1', format: 'ONE_TO_THREE', status: 'SEARCHING' }] },
+      isLoading: false,
+      isError: false,
+    });
+    renderPage();
+    expect(screen.getByRole('tab', { name: 'Waiting' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('Match request (one to three)')).toBeInTheDocument();
+  });
+
   it('has no manual refresh affordance', () => {
     mockCohorts([baseCohort]);
     renderPage();
