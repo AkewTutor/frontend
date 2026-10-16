@@ -40,7 +40,7 @@ export function useManualAssign() {
   return useMutation<
     unknown,
     AxiosError<{ message?: string }>,
-    { tutorId: string; studentIds: string[]; format: CohortFormat }
+    { tutorId: string; studentIds: string[]; subjectId: string; format: CohortFormat }
   >({
     mutationFn: (body) => api.post('/admin/matching/manual-assign', body).then((r) => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEYS.MATCHING_QUEUE] }),
