@@ -44,7 +44,7 @@ beforeEach(() => {
 
 function fillAndAssign() {
   fireEvent.change(screen.getByLabelText('Tutor'), { target: { value: 't1' } });
-  fireEvent.click(screen.getByLabelText('ann@x.com'));
+  fireEvent.change(screen.getByLabelText('Add student'), { target: { value: 's1' } });
   fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
 }
 
@@ -54,7 +54,7 @@ describe('ManualAssignmentPage', () => {
     expect(useUsersMock).toHaveBeenCalledWith(1, 'TUTOR', undefined);
     expect(useUsersMock).toHaveBeenCalledWith(1, 'STUDENT', undefined);
     expect(screen.getByRole('option', { name: 'tutor@x.com' })).toBeInTheDocument();
-    expect(screen.getByLabelText('+251911')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: '+251911' })).toBeInTheDocument();
   });
 
   it('re-queries both lists with the committed search term', () => {
@@ -80,7 +80,7 @@ describe('ManualAssignmentPage', () => {
     fillAndAssign();
     expect(toast.success).toHaveBeenCalled();
     expect(screen.getByLabelText('Tutor')).toHaveValue('');
-    expect(screen.getByLabelText('ann@x.com')).not.toBeChecked();
+    expect(screen.queryByRole('button', { name: 'Remove ann@x.com' })).not.toBeInTheDocument();
   });
 
   it('toasts the server message on error and keeps the form', () => {
