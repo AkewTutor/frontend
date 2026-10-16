@@ -1,6 +1,7 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { CohortFormat } from '@/types';
 
@@ -31,6 +32,9 @@ const FORMAT_LABELS: Record<CohortFormat, string> = {
 
 const selectClass = 'h-9 w-full rounded-md border bg-background px-3 text-sm';
 
+const matches = (option: PickerOption, term: string) =>
+  option.label.toLowerCase().includes(term.trim().toLowerCase());
+
 export default function ManualAssignmentForm({
   tutors,
   students,
@@ -40,13 +44,27 @@ export default function ManualAssignmentForm({
   const [tutorId, setTutorId] = useState('');
   const [studentIds, setStudentIds] = useState<string[]>([]);
   const [format, setFormat] = useState<CohortFormat>('ONE_TO_ONE');
+  const [tutorFilter, setTutorFilter] = useState('');
+  const [studentFilter, setStudentFilter] = useState('');
 
   const { min, max } = LIMITS[format];
   const count = studentIds.length;
   const canAssign = tutorId !== '' && count >= min && count <= max && !isSubmitting;
 
-  const toggleStudent = (id: string, checked: boolean) => {
-    setStudentIds((current) => (checked ? [...current, id] : current.filter((s) => s !== id)));
+  // The chosen tutor stays in the list even when the typed filter would hide it.
+  const visibleTutors = tutors.filter((tutor) => tutor.id === tutorId || matches(tutor, tutorFilter));
+  const chosenStudents = studentIds
+    .map((id) => students.find((student) => student.id === id))
+    .filter((student): student is PickerOption => Boolean(student));
+  const availableStudents = students.filter(
+    (student) => !studentIds.includes(student.id) && matches(student, studentFilter)
+  );
+
+  const addStudent = (id: string) => {
+    if (id && !studentIds.includes(id)) setStudentIds((current) => [...current, id]);
+  };
+  const removeStudent = (id: string) => {
+    setStudentIds((current) => current.filter((s) => s !== id));
   };
 
   return (
@@ -74,6 +92,13 @@ export default function ManualAssignmentForm({
       </div>
 
       <div className="space-y-1">
+        <Label htmlFor="manual-tutor-filter">Find tutor</Label>
+        <Input
+          id="manual-tutor-filter"
+          placeholder="Type to filter tutors"
+          value={tutorFilter}
+          onChange={(e) => setTutorFilter(e.target.value)}
+        />
         <Label htmlFor="manual-tutor">Tutor</Label>
         <select
           id="manual-tutor"
@@ -82,32 +107,60 @@ export default function ManualAssignmentForm({
           onChange={(e) => setTutorId(e.target.value)}
         >
           <option value="">Select a tutor</option>
-          {tutors.map((tutor) => (
+          {visibleTutors.map((tutor) => (
             <option key={tutor.id} value={tutor.id}>
               {tutor.label}
             </option>
           ))}
         </select>
+        {tutorFilter.trim() !== '' && visibleTutors.length === 0 && (
+          <p className="text-sm text-muted-foreground">No tutors match.</p>
+        )}
       </div>
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-semibold">
           {`Students (${count} selected, ${min === max ? `exactly ${max}` : `${min} to ${max}`})`}
         </legend>
-        {students.map((student) => {
-          const checked = studentIds.includes(student.id);
-          return (
-            <label key={student.id} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={checked}
-                disabled={!checked && count >= max}
-                onChange={(e) => toggleStudent(student.id, e.target.checked)}
-              />
+        <Label htmlFor="manual-student-filter">Find student</Label>
+        <Input
+          id="manual-student-filter"
+          placeholder="Type to filter students"
+          value={studentFilter}
+          onChange={(e) => setStudentFilter(e.target.value)}
+        />
+        <Label htmlFor="manual-student">Add student</Label>
+        <select
+          id="manual-student"
+          className={selectClass}
+          value=""
+          disabled={count >= max}
+          onChange={(e) => addStudent(e.target.value)}
+        >
+          <option value="">Select a student</option>
+          {availableStudents.map((student) => (
+            <option key={student.id} value={student.id}>
               {student.label}
-            </label>
-          );
-        })}
+            </option>
+          ))}
+        </select>
+        {studentFilter.trim() !== '' && availableStudents.length === 0 && (
+          <p className="text-sm text-muted-foreground">No students match.</p>
+        )}
+        <ul className="flex flex-wrap gap-2">
+          {chosenStudents.map((student) => (
+            <li key={student.id} className="flex items-center gap-1 rounded-md border px-2 py-1 text-sm">
+              {student.label}
+              <button
+                type="button"
+                aria-label={`Remove ${student.label}`}
+                onClick={() => removeStudent(student.id)}
+              >
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
       </fieldset>
 
       <Button type="submit" disabled={!canAssign}>
