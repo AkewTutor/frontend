@@ -11,9 +11,20 @@ export interface PickerOption {
 }
 
 interface ManualAssignmentFormProps {
+  subjects: { id: string; name: string }[];
+  /** Suggestions for the typed tutor search (already limited to the chosen subject). */
   tutors: PickerOption[];
+  /** Suggestions for the typed student search (students waiting for the chosen subject). */
   students: PickerOption[];
-  onSubmit: (values: { tutorId: string; studentIds: string[]; format: CohortFormat }) => void;
+  onSubjectChange: (subjectId: string) => void;
+  onTutorSearch: (term: string) => void;
+  onStudentSearch: (term: string) => void;
+  onSubmit: (values: {
+    tutorId: string;
+    studentIds: string[];
+    subjectId: string;
+    format: CohortFormat;
+  }) => void;
   isSubmitting?: boolean;
 }
 
@@ -31,48 +42,72 @@ const FORMAT_LABELS: Record<CohortFormat, string> = {
 };
 
 const selectClass = 'h-9 w-full rounded-md border bg-background px-3 text-sm';
-
-const matches = (option: PickerOption, term: string) =>
-  option.label.toLowerCase().includes(term.trim().toLowerCase());
+const suggestionClass = 'w-full rounded-md px-3 py-2 text-left text-sm hover:bg-muted';
 
 export default function ManualAssignmentForm({
+  subjects,
   tutors,
   students,
+  onSubjectChange,
+  onTutorSearch,
+  onStudentSearch,
   onSubmit,
   isSubmitting = false,
 }: ManualAssignmentFormProps) {
-  const [tutorId, setTutorId] = useState('');
-  const [studentIds, setStudentIds] = useState<string[]>([]);
   const [format, setFormat] = useState<CohortFormat>('ONE_TO_ONE');
-  const [tutorFilter, setTutorFilter] = useState('');
-  const [studentFilter, setStudentFilter] = useState('');
+  const [subjectId, setSubjectId] = useState('');
+  const [tutor, setTutor] = useState<PickerOption | null>(null);
+  const [chosen, setChosen] = useState<PickerOption[]>([]);
+  const [tutorTerm, setTutorTerm] = useState('');
+  const [studentTerm, setStudentTerm] = useState('');
 
   const { min, max } = LIMITS[format];
-  const count = studentIds.length;
-  const canAssign = tutorId !== '' && count >= min && count <= max && !isSubmitting;
+  const count = chosen.length;
+  const canAssign =
+    subjectId !== '' && tutor !== null && count >= min && count <= max && !isSubmitting;
 
-  // The chosen tutor stays in the list even when the typed filter would hide it.
-  const visibleTutors = tutors.filter((tutor) => tutor.id === tutorId || matches(tutor, tutorFilter));
-  const chosenStudents = studentIds
-    .map((id) => students.find((student) => student.id === id))
-    .filter((student): student is PickerOption => Boolean(student));
-  const availableStudents = students.filter(
-    (student) => !studentIds.includes(student.id) && matches(student, studentFilter)
-  );
+  const selectSubject = (id: string) => {
+    setSubjectId(id);
+    setTutor(null);
+    setChosen([]);
+    setTutorTerm('');
+    setStudentTerm('');
+    onSubjectChange(id);
+    onTutorSearch('');
+    onStudentSearch('');
+  };
 
-  const addStudent = (id: string) => {
-    if (id && !studentIds.includes(id)) setStudentIds((current) => [...current, id]);
+  const changeTutorTerm = (term: string) => {
+    setTutorTerm(term);
+    onTutorSearch(term);
   };
-  const removeStudent = (id: string) => {
-    setStudentIds((current) => current.filter((s) => s !== id));
+  const changeStudentTerm = (term: string) => {
+    setStudentTerm(term);
+    onStudentSearch(term);
   };
+
+  const pickTutor = (option: PickerOption) => {
+    setTutor(option);
+    changeTutorTerm('');
+  };
+  const pickStudent = (option: PickerOption) => {
+    setChosen((current) =>
+      current.some((s) => s.id === option.id) ? current : [...current, option]
+    );
+    changeStudentTerm('');
+  };
+  const removeStudent = (id: string) => setChosen((current) => current.filter((s) => s.id !== id));
+
+  const studentSuggestions = students.filter((s) => !chosen.some((c) => c.id === s.id));
 
   return (
     <form
       className="space-y-6"
       onSubmit={(e) => {
         e.preventDefault();
-        if (canAssign) onSubmit({ tutorId, studentIds, format });
+        if (canAssign && tutor) {
+          onSubmit({ tutorId: tutor.id, studentIds: chosen.map((s) => s.id), subjectId, format });
+        }
       }}
     >
       <div className="space-y-1">
@@ -92,29 +127,65 @@ export default function ManualAssignmentForm({
       </div>
 
       <div className="space-y-1">
-        <Label htmlFor="manual-tutor-filter">Find tutor</Label>
-        <Input
-          id="manual-tutor-filter"
-          placeholder="Type to filter tutors"
-          value={tutorFilter}
-          onChange={(e) => setTutorFilter(e.target.value)}
-        />
-        <Label htmlFor="manual-tutor">Tutor</Label>
+        <Label htmlFor="manual-subject">Subject</Label>
         <select
-          id="manual-tutor"
+          id="manual-subject"
           className={selectClass}
-          value={tutorId}
-          onChange={(e) => setTutorId(e.target.value)}
+          value={subjectId}
+          onChange={(e) => selectSubject(e.target.value)}
         >
-          <option value="">Select a tutor</option>
-          {visibleTutors.map((tutor) => (
-            <option key={tutor.id} value={tutor.id}>
-              {tutor.label}
+          <option value="">Select a subject</option>
+          {subjects.map((subject) => (
+            <option key={subject.id} value={subject.id}>
+              {subject.name}
             </option>
           ))}
         </select>
-        {tutorFilter.trim() !== '' && visibleTutors.length === 0 && (
-          <p className="text-sm text-muted-foreground">No tutors match.</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="manual-tutor">Tutor</Label>
+        {tutor ? (
+          <p className="flex items-center gap-2 text-sm">
+            {tutor.label}
+            <button
+              type="button"
+              aria-label={`Remove tutor ${tutor.label}`}
+              onClick={() => setTutor(null)}
+            >
+              ✕
+            </button>
+          </p>
+        ) : (
+          <>
+            <Input
+              id="manual-tutor"
+              placeholder={subjectId ? 'Type to search tutors' : 'Choose a subject first'}
+              disabled={!subjectId}
+              value={tutorTerm}
+              onChange={(e) => changeTutorTerm(e.target.value)}
+            />
+            {subjectId && (
+              <ul aria-label="Tutor suggestions" className="space-y-1">
+                {tutors.map((option) => (
+                  <li key={option.id}>
+                    <button
+                      type="button"
+                      className={suggestionClass}
+                      onClick={() => pickTutor(option)}
+                    >
+                      {option.label}
+                    </button>
+                  </li>
+                ))}
+                {tutors.length === 0 && (
+                  <li className="text-sm text-muted-foreground">
+                    {tutorTerm.trim() ? 'No tutors match.' : 'No verified tutors teach this subject.'}
+                  </li>
+                )}
+              </ul>
+            )}
+          </>
         )}
       </div>
 
@@ -122,34 +193,12 @@ export default function ManualAssignmentForm({
         <legend className="text-sm font-semibold">
           {`Students (${count} selected, ${min === max ? `exactly ${max}` : `${min} to ${max}`})`}
         </legend>
-        <Label htmlFor="manual-student-filter">Find student</Label>
-        <Input
-          id="manual-student-filter"
-          placeholder="Type to filter students"
-          value={studentFilter}
-          onChange={(e) => setStudentFilter(e.target.value)}
-        />
-        <Label htmlFor="manual-student">Add student</Label>
-        <select
-          id="manual-student"
-          className={selectClass}
-          value=""
-          disabled={count >= max}
-          onChange={(e) => addStudent(e.target.value)}
-        >
-          <option value="">Select a student</option>
-          {availableStudents.map((student) => (
-            <option key={student.id} value={student.id}>
-              {student.label}
-            </option>
-          ))}
-        </select>
-        {studentFilter.trim() !== '' && availableStudents.length === 0 && (
-          <p className="text-sm text-muted-foreground">No students match.</p>
-        )}
         <ul className="flex flex-wrap gap-2">
-          {chosenStudents.map((student) => (
-            <li key={student.id} className="flex items-center gap-1 rounded-md border px-2 py-1 text-sm">
+          {chosen.map((student) => (
+            <li
+              key={student.id}
+              className="flex items-center gap-1 rounded-md border px-2 py-1 text-sm"
+            >
               {student.label}
               <button
                 type="button"
@@ -161,6 +210,36 @@ export default function ManualAssignmentForm({
             </li>
           ))}
         </ul>
+        <Label htmlFor="manual-student">Student</Label>
+        <Input
+          id="manual-student"
+          placeholder={subjectId ? 'Type to search students' : 'Choose a subject first'}
+          disabled={!subjectId || count >= max}
+          value={studentTerm}
+          onChange={(e) => changeStudentTerm(e.target.value)}
+        />
+        {subjectId && count < max && (
+          <ul aria-label="Student suggestions" className="space-y-1">
+            {studentSuggestions.map((option) => (
+              <li key={option.id}>
+                <button
+                  type="button"
+                  className={suggestionClass}
+                  onClick={() => pickStudent(option)}
+                >
+                  {option.label}
+                </button>
+              </li>
+            ))}
+            {studentSuggestions.length === 0 && (
+              <li className="text-sm text-muted-foreground">
+                {studentTerm.trim()
+                  ? 'No students match.'
+                  : 'No students are waiting for this subject.'}
+              </li>
+            )}
+          </ul>
+        )}
       </fieldset>
 
       <Button type="submit" disabled={!canAssign}>
