@@ -22,7 +22,7 @@ beforeEach(() => {
 });
 
 describe('useRequestFormatSwitch', () => {
-  it('posts the selected cohort and target format and invalidates nothing', async () => {
+  it('posts { toFormat } as the API expects and invalidates nothing', async () => {
     mockedApi.post.mockResolvedValue({ data: { formatSwitchRequestId: 'f1' } });
     const { qc, wrapper } = setup();
     const spy = vi.spyOn(qc, 'invalidateQueries');
@@ -31,10 +31,7 @@ describe('useRequestFormatSwitch', () => {
     result.current.mutate({ cohortId: 'c1', targetFormat: 'ONE_TO_THREE' });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(mockedApi.post).toHaveBeenCalledWith('/format-switch', {
-      cohortId: 'c1',
-      targetFormat: 'ONE_TO_THREE',
-    });
+    expect(mockedApi.post).toHaveBeenCalledWith('/format-switch', { toFormat: 'ONE_TO_THREE' });
     expect(result.current.data).toEqual({ formatSwitchRequestId: 'f1' });
     expect(spy).not.toHaveBeenCalled();
   });
