@@ -36,6 +36,7 @@ export default function SubjectRankingForm({
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const swap = () => setSelected((prev) => [prev[1], prev[0]]);
+  const remove = (id: string) => setSelected((prev) => prev.filter((x) => x !== id));
 
   const handleSave = () =>
     onSave(selected.map((subjectId, i) => ({ subjectId, rank: (i + 1) as 1 | 2 })));
@@ -84,12 +85,25 @@ export default function SubjectRankingForm({
                   {i === 0 ? 'Move down' : 'Move up'}
                 </Button>
               )}
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => remove(id)}
+                aria-label={`Remove ${names.get(id) ?? id}`}
+              >
+                Remove
+              </Button>
             </li>
           ))}
         </ol>
       )}
 
-      <Button type="button" onClick={handleSave} disabled={selected.length === 0}>
+      <Button
+        type="button"
+        onClick={handleSave}
+        disabled={selected.length === 0 && currentRankings.length === 0}
+      >
         Save
       </Button>
     </div>

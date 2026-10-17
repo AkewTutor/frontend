@@ -74,4 +74,43 @@ describe('SubjectRankingForm', () => {
     expect(box('Chemistry')).toBeChecked();
     expect(screen.getByText('Rank 1: Chemistry')).toBeInTheDocument();
   });
+
+  it('removes a ranked subject that is not in the active checklist (inactive)', () => {
+    const onSave = vi.fn();
+    render(
+      <SubjectRankingForm
+        subjects={subjects}
+        currentRankings={[
+          { subjectId: 'x', subjectName: 'Old Subject', rank: 1 },
+          { subjectId: 'a', subjectName: 'Algebra', rank: 2 },
+        ]}
+        onSave={onSave}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Old Subject' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(onSave).toHaveBeenCalledWith([{ subjectId: 'a', rank: 1 }]);
+  });
+
+  it('can save an empty ranking when removing the last subject', () => {
+    const onSave = vi.fn();
+    render(
+      <SubjectRankingForm
+        subjects={subjects}
+        currentRankings={[{ subjectId: 'a', subjectName: 'Algebra', rank: 1 }]}
+        onSave={onSave}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Algebra' }));
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(onSave).toHaveBeenCalledWith([]);
+  });
+
+  it('keeps Save disabled when there is nothing selected and nothing saved', () => {
+    setup();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
 });
