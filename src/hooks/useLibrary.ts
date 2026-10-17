@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
@@ -52,7 +52,12 @@ export function useUploadMaterial() {
       formData.append('title', title);
       formData.append('fileType', fileType);
       formData.append('file', file);
-      return api.post<UploadMaterialResponse>('/library/materials', formData).then((r) => r.data);
+      return api
+        .post<UploadMaterialResponse>('/library/materials', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 120000,
+        })
+        .then((r) => r.data);
     },
     onSuccess: (_, { cohortId }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, cohortId] });
