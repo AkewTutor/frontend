@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+﻿import { render, screen, fireEvent } from '@testing-library/react';
 import { createElement } from 'react';
 import RecordingComplianceQueuePage from '@/pages/admin/RecordingComplianceQueuePage';
 import { useComplianceQueue } from '@/hooks/useRecordings';
@@ -150,5 +150,28 @@ describe('RecordingComplianceQueuePage', () => {
 
     fireEvent.click(nextButton);
     expect(useComplianceQueue).toHaveBeenLastCalledWith(2);
+  });
+  it('shows tutor name, email and incomplete consent', () => {
+    mockData({
+      sessions: [
+        {
+          sessionId: 's5',
+          cohortId: 'c5',
+          tutorId: 't5',
+          tutorName: 'Tutor Three',
+          tutorEmail: 't3@example.com',
+          scheduledEnd: '2026-10-08T10:00:00Z',
+          recordingStatus: 'PENDING',
+          consentIncomplete: true,
+          consentMissingCount: 1,
+        },
+      ],
+      total: 1,
+    });
+    renderPage();
+
+    expect(screen.getByText('Tutor Three')).toBeInTheDocument();
+    expect(screen.getByText('t3@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Incomplete (1)')).toBeInTheDocument();
   });
 });
