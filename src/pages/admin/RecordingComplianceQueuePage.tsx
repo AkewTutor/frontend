@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useComplianceQueue } from '@/hooks/useRecordings';
 import StatusBadge from '@/components/common/StatusBadge';
 import EmptyState from '@/components/common/EmptyState';
@@ -35,6 +35,8 @@ export default function RecordingComplianceQueuePage() {
                 <th style={{ padding: '0.5rem' }}>Session ID</th>
                 <th style={{ padding: '0.5rem' }}>Cohort ID</th>
                 <th style={{ padding: '0.5rem' }}>Tutor ID</th>
+                <th style={{ padding: '0.5rem' }}>Tutor</th>
+                <th style={{ padding: '0.5rem' }}>Consent</th>
                 <th style={{ padding: '0.5rem' }}>Scheduled End</th>
                 <th style={{ padding: '0.5rem' }}>Status</th>
               </tr>
@@ -58,6 +60,15 @@ export default function RecordingComplianceQueuePage() {
                     <td style={{ padding: '0.5rem' }}>{row.sessionId}</td>
                     <td style={{ padding: '0.5rem' }}>{row.cohortId}</td>
                     <td style={{ padding: '0.5rem' }}>{row.tutorId}</td>
+                    <td style={{ padding: '0.5rem' }}>
+                      <div>{row.tutorName ?? '—'}</div>
+                      <div>{row.tutorEmail ?? ''}</div>
+                    </td>
+                    <td style={{ padding: '0.5rem' }}>
+                      {row.consentIncomplete
+                        ? `Incomplete (${row.consentMissingCount ?? 0})`
+                        : 'OK'}
+                    </td>
                     <td style={{ padding: '0.5rem' }}>
                       {new Date(row.scheduledEnd).toLocaleString()}
                     </td>
