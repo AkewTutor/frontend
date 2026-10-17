@@ -1,17 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
 import type { AdminPeopleResponse, Role } from '@/types';
 
 // GET /admin/people (Admin). `role` and `search` are optional filters.
-export function useUsers(page = 1, role?: Role, search?: string) {
+// `subjectId` narrows TUTOR to verified tutors ranking it and STUDENT to those waiting for it.
+export function useUsers(page = 1, role?: Role, search?: string, subjectId?: string) {
   return useQuery({
-    queryKey: [QUERY_KEYS.ADMIN_PEOPLE, page, role, search],
+    queryKey: [QUERY_KEYS.ADMIN_PEOPLE, page, role, search, subjectId],
     queryFn: () =>
       api
-        .get<AdminPeopleResponse>('/admin/people', { params: { page, limit: 20, role, search } })
+        .get<AdminPeopleResponse>('/admin/people', {
+          params: { page, limit: 20, role, search, subjectId },
+        })
         .then((r) => r.data),
+    // Keep the old suggestions on screen while the next search loads (no flicker while typing).
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -90,6 +90,18 @@ describe('GroupFormatStatusPage', () => {
     expect(screen.getByRole('tab', { name: 'Waiting' })).toHaveAttribute('aria-selected', 'true');
   });
 
+  it('selects Waiting when only a match request is pending and no group is active', () => {
+    mockCohorts([]);
+    useMyMatchRequestsMock.mockReturnValue({
+      data: { requests: [{ id: 'mr1', format: 'ONE_TO_THREE', status: 'SEARCHING' }] },
+      isLoading: false,
+      isError: false,
+    });
+    renderPage();
+    expect(screen.getByRole('tab', { name: 'Waiting' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByText('Match request (one to three)')).toBeInTheDocument();
+  });
+
   it('has no manual refresh affordance', () => {
     mockCohorts([baseCohort]);
     renderPage();
@@ -151,5 +163,11 @@ describe('GroupFormatStatusPage', () => {
     });
     renderPage();
     expect(screen.getByText(/couldn.t load/i)).toBeInTheDocument();
+  });
+
+  it('shows how many students have joined a forming group', () => {
+    mockCohorts([{ ...baseCohort, status: 'FORMING', memberCount: 1 }]);
+    renderPage();
+    expect(screen.getByText('1 of 3 students joined')).toBeInTheDocument();
   });
 });

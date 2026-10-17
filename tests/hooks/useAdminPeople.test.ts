@@ -52,6 +52,16 @@ describe('useUsers', () => {
       params: { page: 1, limit: 20, role: undefined, search: undefined },
     });
   });
+
+  it('passes the subject filter so tutors/students are narrowed server-side', async () => {
+    mockedApi.get.mockResolvedValue({ data: { users: [], page: 1, limit: 20, total: 0 } });
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useUsers(1, 'TUTOR', 'abel', 'sub-1'), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedApi.get).toHaveBeenCalledWith('/admin/people', {
+      params: { page: 1, limit: 20, role: 'TUTOR', search: 'abel', subjectId: 'sub-1' },
+    });
+  });
 });
 
 describe('useSuspendAccount', () => {

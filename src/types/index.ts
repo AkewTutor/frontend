@@ -187,6 +187,7 @@ export interface MatchingQueueItem {
   path: 'PATH_A' | 'PATH_B' | 'PATH_C';
   format: CohortFormat;
   tutorId: string;
+  tutorEmail?: string | null; // beyond Doc 06-api/03: shown in the admin queue
   studentIds: string[];
   createdAt: string;
   isOverdue: boolean;
@@ -207,6 +208,7 @@ export interface Cohort {
   format: CohortFormat;
   status: 'FORMING' | 'PENDING_APPROVAL' | 'PENDING_ADMIN_APPROVAL' | 'ACTIVE' | 'ENDED';
   targetGroupSize: number;
+  memberCount?: number; // beyond Doc 06-api/03: non-ended memberships in the cohort
   groupFormationWindowExpiresAt: string | null;
   membershipStatus: 'PENDING_PAYMENT' | 'ACTIVE' | 'ENDED';
 }

@@ -1,16 +1,20 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+﻿import { fireEvent, render, screen } from '@testing-library/react';
 import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ManualAssignmentPage from '@/pages/admin/ManualAssignmentPage';
 
-const { useUsersMock, mutateMock } = vi.hoisted(() => ({
+const { useUsersMock, useSubjectsMock, mutateMock } = vi.hoisted(() => ({
   useUsersMock: vi.fn(),
+  useSubjectsMock: vi.fn(),
   mutateMock: vi.fn(),
 }));
 
 vi.mock('@/hooks/useAdminPeople', () => ({
   useUsers: (...args: unknown[]) => useUsersMock(...args),
+}));
+vi.mock('@/hooks/useSubjects', () => ({
+  useSubjects: () => useSubjectsMock(),
 }));
 vi.mock('@/hooks/useAdminMatching', () => ({
   useManualAssign: () => ({ mutate: mutateMock, isPending: false }),
@@ -35,6 +39,11 @@ function ok(users: ReturnType<typeof user>[]) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useSubjectsMock.mockReturnValue({
+    data: { subjects: [{ id: 'sub-1', name: 'Geography', isActive: true }] },
+    isLoading: false,
+    isError: false,
+  });
   useUsersMock.mockImplementation((_page: number, role: string) =>
     role === 'TUTOR'
       ? ok([user('t1', 'TUTOR', 'tutor@x.com')])
@@ -42,34 +51,51 @@ beforeEach(() => {
   );
 });
 
+const pickSubject = () =>
+  fireEvent.change(screen.getByLabelText('Subject'), { target: { value: 'sub-1' } });
+
 function fillAndAssign() {
-  fireEvent.change(screen.getByLabelText('Tutor'), { target: { value: 't1' } });
-  fireEvent.click(screen.getByLabelText('ann@x.com'));
+  pickSubject();
+  fireEvent.click(screen.getByRole('button', { name: 'tutor@x.com' }));
+  fireEvent.click(screen.getByRole('button', { name: 'ann@x.com' }));
   fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
 }
 
 describe('ManualAssignmentPage', () => {
-  it('loads tutors and students and labels them by email, then phone', () => {
+  it('has no top search box and lists subjects to choose from', () => {
     render(<ManualAssignmentPage />);
-    expect(useUsersMock).toHaveBeenCalledWith(1, 'TUTOR', undefined);
-    expect(useUsersMock).toHaveBeenCalledWith(1, 'STUDENT', undefined);
-    expect(screen.getByRole('option', { name: 'tutor@x.com' })).toBeInTheDocument();
-    expect(screen.getByLabelText('+251911')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Search people')).not.toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Geography' })).toBeInTheDocument();
   });
 
-  it('re-queries both lists with the committed search term', () => {
+  it('limits both lists to the chosen subject', () => {
     render(<ManualAssignmentPage />);
-    fireEvent.change(screen.getByLabelText('Search people'), { target: { value: ' ann ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
-    expect(useUsersMock).toHaveBeenCalledWith(1, 'TUTOR', 'ann');
-    expect(useUsersMock).toHaveBeenCalledWith(1, 'STUDENT', 'ann');
+    pickSubject();
+    expect(useUsersMock).toHaveBeenCalledWith(1, 'TUTOR', undefined, 'sub-1');
+    expect(useUsersMock).toHaveBeenCalledWith(1, 'STUDENT', undefined, 'sub-1');
   });
 
-  it('submits { tutorId, studentIds, format }', () => {
+  it('suggests people labelled by email, then phone', () => {
+    render(<ManualAssignmentPage />);
+    pickSubject();
+    expect(screen.getByRole('button', { name: 'tutor@x.com' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '+251911' })).toBeInTheDocument();
+  });
+
+  it('re-queries each list with what is typed in its own box', () => {
+    render(<ManualAssignmentPage />);
+    pickSubject();
+    fireEvent.change(screen.getByLabelText('Tutor'), { target: { value: ' abel ' } });
+    expect(useUsersMock).toHaveBeenCalledWith(1, 'TUTOR', 'abel', 'sub-1');
+    fireEvent.change(screen.getByLabelText('Student'), { target: { value: 'ann' } });
+    expect(useUsersMock).toHaveBeenCalledWith(1, 'STUDENT', 'ann', 'sub-1');
+  });
+
+  it('submits { tutorId, studentIds, subjectId, format }', () => {
     render(<ManualAssignmentPage />);
     fillAndAssign();
     expect(mutateMock).toHaveBeenCalledWith(
-      { tutorId: 't1', studentIds: ['s1'], format: 'ONE_TO_ONE' },
+      { tutorId: 't1', studentIds: ['s1'], subjectId: 'sub-1', format: 'ONE_TO_ONE' },
       expect.any(Object)
     );
   });
@@ -79,8 +105,8 @@ describe('ManualAssignmentPage', () => {
     render(<ManualAssignmentPage />);
     fillAndAssign();
     expect(toast.success).toHaveBeenCalled();
-    expect(screen.getByLabelText('Tutor')).toHaveValue('');
-    expect(screen.getByLabelText('ann@x.com')).not.toBeChecked();
+    expect(screen.getByLabelText('Subject')).toHaveValue('');
+    expect(screen.queryByRole('button', { name: 'Remove ann@x.com' })).not.toBeInTheDocument();
   });
 
   it('toasts the server message on error and keeps the form', () => {
@@ -90,12 +116,12 @@ describe('ManualAssignmentPage', () => {
     render(<ManualAssignmentPage />);
     fillAndAssign();
     expect(toast.error).toHaveBeenCalledWith('Tutor is not verified');
-    expect(screen.getByLabelText('Tutor')).toHaveValue('t1');
+    expect(screen.getByLabelText('Subject')).toHaveValue('sub-1');
   });
 
-  it('shows an error line when people fail to load', () => {
-    useUsersMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
+  it('shows an error line when subjects fail to load', () => {
+    useSubjectsMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
     render(<ManualAssignmentPage />);
-    expect(screen.getByText(/couldn.t load people/i)).toBeInTheDocument();
+    expect(screen.getByText(/couldn.t load subjects/i)).toBeInTheDocument();
   });
 });
