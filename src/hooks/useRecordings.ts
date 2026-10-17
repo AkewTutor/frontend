@@ -67,7 +67,12 @@ export function useUploadRecording() {
       const formData = new FormData();
       formData.append('sessionId', sessionId);
       formData.append('file', file);
-      return api.post<{ recordingId: string }>('/recordings', formData).then((r) => r.data);
+      return api
+        .post<{ recordingId: string }>('/recordings', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 120000,
+        })
+        .then((r) => r.data);
     },
   });
 }
