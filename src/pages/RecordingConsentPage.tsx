@@ -37,6 +37,10 @@ export default function RecordingConsentPage() {
     <div className="rounded-md border p-4">
       <h2 className="mb-4 text-xl font-bold">Recording Consent</h2>
       <p className="mb-4">Please acknowledge that sessions may be recorded.</p>
+      <ul className="mb-4 text-sm">
+        <li>Tutor: {data?.tutorAcknowledgedAt ? 'acknowledged' : 'pending'}</li>
+        <li>Student/parent: {data?.studentOrParentAcknowledgedAt ? 'acknowledged' : 'pending'}</li>
+      </ul>
       <Button
         onClick={() =>
           mutate(
