@@ -1,4 +1,4 @@
-import { createElement, type ReactNode } from 'react';
+﻿import { createElement, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -99,11 +99,16 @@ describe('queue mutations', () => {
     expect(spy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.MATCHING_QUEUE] });
   });
 
-  it('useManualAssign posts the tutor/student/format triple and invalidates the queue', async () => {
+  it('useManualAssign posts the tutor/student/subject/format payload and invalidates the queue', async () => {
     mockedApi.post.mockResolvedValue({ data: {} });
     const { qc, wrapper } = setup();
     const spy = vi.spyOn(qc, 'invalidateQueries');
-    const body = { tutorId: 't1', studentIds: ['s1', 's2'], format: 'ONE_TO_THREE' as const };
+    const body = {
+      tutorId: 't1',
+      studentIds: ['s1', 's2'],
+      subjectId: 'sub1',
+      format: 'ONE_TO_THREE' as const,
+    };
 
     const { result } = renderHook(() => useManualAssign(), { wrapper });
     result.current.mutate(body);
