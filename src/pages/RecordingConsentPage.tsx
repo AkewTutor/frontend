@@ -1,7 +1,8 @@
-import { useSearchParams } from 'react-router-dom';
+﻿import { useSearchParams } from 'react-router-dom';
 import { useConsentStatus, useAcknowledgeConsent } from '@/hooks/useRecordingConsent';
 import EmptyState from '@/components/common/EmptyState';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function RecordingConsentPage() {
   const [params] = useSearchParams();
@@ -36,7 +37,18 @@ export default function RecordingConsentPage() {
     <div className="rounded-md border p-4">
       <h2 className="mb-4 text-xl font-bold">Recording Consent</h2>
       <p className="mb-4">Please acknowledge that sessions may be recorded.</p>
-      <Button onClick={() => mutate({ tutorId, studentId })} disabled={isPending}>
+      <Button
+        onClick={() =>
+          mutate(
+            { tutorId, studentId },
+            {
+              onSuccess: () => toast.success('Consent acknowledged.'),
+              onError: () => toast.error('Could not acknowledge consent. Please try again.'),
+            }
+          )
+        }
+        disabled={isPending}
+      >
         Acknowledge
       </Button>
     </div>
