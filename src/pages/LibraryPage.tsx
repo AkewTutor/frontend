@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useMyCohorts } from '@/hooks/useCohort';
 import { useMyRecordings, useKeepPermanently } from '@/hooks/useRecordings';
@@ -6,6 +6,7 @@ import { useCohortMaterials } from '@/hooks/useLibrary';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
+import { formatDate } from '@/utils';
 import RecordingPlayer from '@/components/class-delivery/RecordingPlayer';
 import MaterialUploadForm from '@/components/class-delivery/MaterialUploadForm';
 
@@ -81,7 +82,11 @@ function LibraryContent() {
             {filteredRecordings.map((rec) => (
               <li key={rec.id} className="flex items-center justify-between rounded-md border p-4">
                 <div>
-                  <p className="font-semibold">Recording for Session {rec.sessionId}</p>
+                  <p className="font-semibold">
+                    {rec.sessionNumber ? `Session ${rec.sessionNumber}` : 'Class recording'}
+                    {rec.sessionStart ? ` - ${formatDate(rec.sessionStart)}` : ''}
+                  </p>
+                  <p className="text-xs text-muted-foreground">ID: {rec.sessionId}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button onClick={() => setPlayingRecordingId(rec.id)}>Play</Button>
