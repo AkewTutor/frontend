@@ -45,7 +45,9 @@ export function useSignedUrl(recordingId: string | null) {
   return useQuery({
     queryKey: [QUERY_KEYS.SIGNED_URL, recordingId],
     queryFn: () =>
-      api.get<{ url: string }>(`/recordings/${recordingId}/signed-url`).then((r) => r.data),
+      api
+        .get<{ signedUrl: string }>(`/recordings/${recordingId}/signed-url`)
+        .then((r) => ({ url: r.data.signedUrl })),
     enabled: !!recordingId,
     retry: false,
   });
