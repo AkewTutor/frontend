@@ -1,7 +1,8 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useUploadMaterial } from '@/hooks/useLibrary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
   const { mutate, isPending } = useUploadMaterial();
@@ -18,7 +19,13 @@ export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
     mutate(
       { cohortId, title: trimmedTitle, fileType, file },
       {
+        onError: (err) =>
+          toast.error(
+            (err.response?.data as { message?: string } | undefined)?.message ??
+              'Upload failed. Please try again.'
+          ),
         onSuccess: () => {
+          toast.success('Material uploaded.');
           setTitle('');
           setFileType('PDF');
           setFile(null);
