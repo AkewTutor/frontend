@@ -1,4 +1,4 @@
-import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+﻿import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import {
   faBell,
   faBook,
@@ -82,6 +82,7 @@ export const TUTOR_NAV: NavItem[] = [
   { label: 'Profile', to: ROUTES.TUTOR_PROFILE, icon: faUser },
   { label: 'Subjects', to: ROUTES.TUTOR_SUBJECTS, icon: faListCheck },
   { label: 'Availability', to: ROUTES.TUTOR_AVAILABILITY, icon: faClockRotateLeft },
+  { label: 'My classes', to: ROUTES.TUTOR_MY_CLASSES, icon: faCalendarDays },
   { label: 'Session misses', to: ROUTES.TUTOR_SESSION_MISSES, icon: faClipboardList },
   { label: 'Earnings', to: ROUTES.TUTOR_EARNINGS, icon: faMoneyBill },
   ...shared,
