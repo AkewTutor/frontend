@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import LibraryPage from '@/pages/LibraryPage';
 import { useAuthStore } from '@/store/auth.store';
@@ -68,5 +68,31 @@ describe('LibraryPage', () => {
 
     render(<LibraryPage />);
     expect(screen.getByRole('button', { name: /Keep permanently/i })).toBeInTheDocument();
+  });
+  it('shows the session number and date, with the session id in small text', () => {
+    mockUseMyCohorts.mockReturnValue({
+      data: { cohorts: [{ cohortId: 'c1' }] },
+      isLoading: false,
+    } as never);
+    useAuthStore.setState({ user: { role: 'STUDENT', id: 's1' } as never });
+    mockUseMyRecordings.mockReturnValue({
+      data: {
+        recordings: [
+          {
+            id: 'r1',
+            sessionId: 'sess-abc',
+            cohortId: 'c1',
+            keepPermanently: false,
+            sessionNumber: 2,
+            sessionStart: '2026-10-26T12:00:00Z',
+          },
+        ],
+      },
+      isLoading: false,
+    } as never);
+
+    render(<LibraryPage />);
+    expect(screen.getByText('Session 2 - Oct 26, 2026')).toBeInTheDocument();
+    expect(screen.getByText('ID: sess-abc')).toBeInTheDocument();
   });
 });
