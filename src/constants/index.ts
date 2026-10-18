@@ -1,9 +1,9 @@
-export const ROUTES = {
+﻿export const ROUTES = {
   // HOME stays until useAuth/PublicRoute use roleDefaultRoute (Dev A, Phase 1), then delete
   HOME: '/',
   LOGIN: '/login',
 
-  // ── shared-config ──
+  // â”€â”€ shared-config â”€â”€
   LANDING: '/',
   POLICY: '/policies/:type',
   REGISTER_STUDENT: '/register/student',
@@ -22,7 +22,7 @@ export const ROUTES = {
   TUTOR_HOME: '/tutor',
   ADMIN_HOME: '/admin',
 
-  // ── accounts-guardianship ──
+  // â”€â”€ accounts-guardianship â”€â”€
   INVITE_ACTIVATION: '/invite/:token/activate',
   STUDENT_PROFILE: '/student/profile',
   STUDENT_GUARDIAN_INVITE: '/student/guardian-invite',
@@ -35,7 +35,7 @@ export const ROUTES = {
   ADMIN_PEOPLE: '/admin/people',
   ADMIN_SUBJECTS: '/admin/subjects',
 
-  // ── matching-cohorts ──
+  // â”€â”€ matching-cohorts â”€â”€
   STUDENT_FIND_TUTOR: '/student/find-tutor',
   STUDENT_RECOMMENDATIONS: '/student/recommendations',
   STUDENT_TUTOR_VIEW: '/student/tutors/:tutorId',
@@ -44,8 +44,9 @@ export const ROUTES = {
   ADMIN_MATCHING_QUEUE: '/admin/matching-queue',
   ADMIN_MANUAL_ASSIGNMENT: '/admin/manual-assignment',
 
-  // ── class-delivery-library ──
+  // â”€â”€ class-delivery-library â”€â”€
   STUDENT_UPCOMING_CLASSES: '/student/upcoming-classes',
+  TUTOR_MY_CLASSES: '/tutor/classes',
   TUTOR_CONDUCT_CLASS: '/tutor/conduct-class/:sessionId',
   LIBRARY: '/library',
   RECORDING_CONSENT: '/recording-consent',
@@ -57,18 +58,18 @@ export const ROUTES = {
   TUTOR_SESSION_MISSES: '/tutor/session-misses',
   ADMIN_SESSION_MISSES: '/admin/session-misses',
 
-  // ── messaging ──
+  // â”€â”€ messaging â”€â”€
   MESSAGING: '/messaging',
   ADMIN_MESSAGE_THREAD: '/admin/messaging/:threadId',
 
-  // ── gamification-engagement ──
+  // â”€â”€ gamification-engagement â”€â”€
   STUDENT_ACHIEVEMENTS: '/student/achievements',
   STUDENT_LEADERBOARD: '/student/leaderboard',
   STUDENT_CHALLENGES: '/student/challenges',
   ADMIN_BADGES: '/admin/badges',
   ADMIN_CHALLENGES: '/admin/challenges',
 
-  // ── payments-earnings ──
+  // â”€â”€ payments-earnings â”€â”€
   PAYMENTS: '/payments',
   PAYMENT_HISTORY: '/payments/history',
   PAYMENT_PAUSED: '/payments/paused',
@@ -78,7 +79,7 @@ export const ROUTES = {
   ADMIN_PAYOUTS: '/admin/payouts',
   ADMIN_PROMOTIONS: '/admin/promotions',
 
-  // ── support-trust-admin ──
+  // â”€â”€ support-trust-admin â”€â”€
   COMPLAINTS: '/complaints',
   SUPPORT: '/support',
   ADMIN_DISPUTES: '/admin/disputes',
@@ -86,12 +87,12 @@ export const ROUTES = {
 } as const;
 
 export const QUERY_KEYS = {
-  // ── shared-config ──
+  // â”€â”€ shared-config â”€â”€
   NOTIFICATIONS: 'notifications',
   POLICY: 'policy',
   ANNOUNCEMENTS: 'announcements',
 
-  // ── accounts-guardianship ──
+  // â”€â”€ accounts-guardianship â”€â”€
   STUDENT_PROFILE: 'student-profile',
   TUTOR_PROFILE: 'tutor-profile',
   AVAILABILITY: 'availability',
@@ -100,7 +101,7 @@ export const QUERY_KEYS = {
   PENDING_TUTORS: 'pending-tutors',
   ADMIN_PEOPLE: 'admin-people',
 
-  // ── matching-cohorts ──
+  // â”€â”€ matching-cohorts â”€â”€
   TUTOR_SEARCH: 'tutor-search',
   RECOMMENDATIONS: 'recommendations',
   TUTOR_PROFILE_VIEW: 'tutor-profile-view',
@@ -109,7 +110,7 @@ export const QUERY_KEYS = {
   COHORT_MEMBERS: 'cohort-members',
   MATCHING_QUEUE: 'matching-queue',
 
-  // ── class-delivery-library ──
+  // â”€â”€ class-delivery-library â”€â”€
   SESSIONS: 'sessions',
   SESSION_DETAIL: 'session-detail',
   RECORDING_CONSENT: 'recording-consent',
@@ -120,12 +121,12 @@ export const QUERY_KEYS = {
   ASSESSMENTS: 'assessments',
   SESSION_MISSES: 'session-misses',
 
-  // ── messaging ──
+  // â”€â”€ messaging â”€â”€
   THREAD: 'thread',
   MESSAGES: 'messages',
   ADMIN_THREAD: 'admin-thread',
 
-  // ── gamification-engagement ──
+  // â”€â”€ gamification-engagement â”€â”€
   XP_PROGRESS: 'xp-progress',
   LEADERBOARD: 'leaderboard',
   MY_BADGES: 'my-badges',
@@ -133,7 +134,7 @@ export const QUERY_KEYS = {
   CHALLENGES: 'challenges',
   CHALLENGE_PROGRESS: 'challenge-progress',
 
-  // ── payments-earnings ──
+  // â”€â”€ payments-earnings â”€â”€
   PAYMENT_HISTORY: 'payment-history',
   PAUSE_STATUS: 'pause-status',
   PRICING: 'pricing',
@@ -142,7 +143,7 @@ export const QUERY_KEYS = {
   PAYOUTS: 'payouts',
   PROMOTIONS: 'promotions',
 
-  // ── support-trust-admin ──
+  // â”€â”€ support-trust-admin â”€â”€
   MY_COMPLAINTS: 'my-complaints',
   COMPLAINT_DETAIL: 'complaint-detail',
   SUPPORT_CONTACT: 'support-contact',
