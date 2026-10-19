@@ -1,4 +1,4 @@
-﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
@@ -44,13 +44,13 @@ export function useUploadMaterial() {
   return useMutation<
     UploadMaterialResponse,
     AxiosError,
-    { cohortId: string; title: string; fileType: 'PDF' | 'NOTE' | 'BOOK'; file: File }
+    { cohortId: string; title: string; file: File }
   >({
-    mutationFn: ({ cohortId, title, fileType, file }) => {
+    mutationFn: ({ cohortId, title, file }) => {
       const formData = new FormData();
       formData.append('cohortId', cohortId);
       formData.append('title', title);
-      formData.append('fileType', fileType);
+
       formData.append('file', file);
       return api
         .post<UploadMaterialResponse>('/library/materials', formData, {
