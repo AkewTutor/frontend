@@ -1,23 +1,44 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useUploadMaterial } from '@/hooks/useLibrary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
+const ACCEPT = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp';
+const ALLOWED_EXT = /\.(pdf|doc|docx|jpe?g|png|webp)$/i;
+const MAX_BYTES = 10 * 1024 * 1024;
+
 export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
   const { mutate, isPending } = useUploadMaterial();
   const [title, setTitle] = useState('');
-  const [fileType, setFileType] = useState<'PDF' | 'NOTE' | 'BOOK'>('PDF');
   const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
 
   const trimmedTitle = title.trim();
   const canSubmit = trimmedTitle.length > 0 && file !== null;
 
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0] || null;
+    if (picked && !ALLOWED_EXT.test(picked.name)) {
+      toast.error('Unsupported file type. Allowed: PDF, DOC, DOCX, JPG, PNG, WEBP');
+      setFile(null);
+      setFileKey((k) => k + 1);
+      return;
+    }
+    if (picked && picked.size > MAX_BYTES) {
+      toast.error('File too large (max 10 MB)');
+      setFile(null);
+      setFileKey((k) => k + 1);
+      return;
+    }
+    setFile(picked);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || !file) return;
     mutate(
-      { cohortId, title: trimmedTitle, fileType, file },
+      { cohortId, title: trimmedTitle, file },
       {
         onError: (err) =>
           toast.error(
@@ -27,8 +48,8 @@ export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
         onSuccess: () => {
           toast.success('Material uploaded.');
           setTitle('');
-          setFileType('PDF');
           setFile(null);
+          setFileKey((k) => k + 1);
         },
       }
     );
@@ -49,22 +70,8 @@ export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="fileType">Type</label>
-        <select
-          id="fileType"
-          value={fileType}
-          onChange={(e) => setFileType(e.target.value as 'PDF' | 'NOTE' | 'BOOK')}
-          className="rounded-md border px-3 py-2"
-        >
-          <option value="PDF">PDF</option>
-          <option value="NOTE">Note</option>
-          <option value="BOOK">Book</option>
-        </select>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label htmlFor="file">File</label>
-        <Input id="file" type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+        <label htmlFor="file">File (PDF, DOC, DOCX or image, max 10 MB)</label>
+        <Input key={fileKey} id="file" type="file" accept={ACCEPT} onChange={handleFile} />
       </div>
 
       <Button type="submit" disabled={!canSubmit || isPending}>
