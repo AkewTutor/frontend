@@ -97,3 +97,34 @@ export function useDeleteMaterial() {
     },
   });
 }
+
+export interface LibraryActivityUser {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface LibraryActivityItem {
+  id: string;
+  title: string;
+  fileType: string;
+  cohortId: string;
+  createdAt: string;
+  removedAt: string | null;
+  fileUrl: string | null;
+  tutor: LibraryActivityUser | null;
+  students: LibraryActivityUser[];
+}
+
+export function useLibraryActivity(q: string) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, 'activity', q],
+    queryFn: () =>
+      api
+        .get<{ items: LibraryActivityItem[] }>('/admin/library/activity', {
+          params: q ? { q } : {},
+        })
+        .then((r) => r.data),
+    placeholderData: (prev) => prev,
+  });
+}
