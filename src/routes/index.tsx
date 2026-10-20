@@ -71,7 +71,7 @@ const ManualAssignmentPage = lazy(() => import('@/pages/admin/ManualAssignmentPa
 const RecordingComplianceQueuePage = lazy(
   () => import('@/pages/admin/RecordingComplianceQueuePage')
 );
-const AdminLibraryPage = lazy(() => import('@/pages/admin/AdminLibraryPage'));
+const AdminLibraryPage = lazy(() => import('@/pages/admin/AdminLibraryHubPage'));
 const AdminSessionMissesPage = lazy(() => import('@/pages/admin/AdminSessionMissesPage'));
 const MessageThreadReviewPage = lazy(() => import('@/pages/admin/MessageThreadReviewPage'));
 const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage'));
