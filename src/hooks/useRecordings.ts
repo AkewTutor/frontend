@@ -42,12 +42,19 @@ export function useMyRecordings(params?: { studentId?: string; page?: number; li
 }
 
 export function useSignedUrl(recordingId: string | null) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: [QUERY_KEYS.SIGNED_URL, recordingId],
     queryFn: () =>
       api
         .get<{ signedUrl: string }>(`/recordings/${recordingId}/signed-url`)
-        .then((r) => ({ url: r.data.signedUrl })),
+        .then((r) => ({ url: r.data.signedUrl }))
+        .catch((err: AxiosError) => {
+          if (err.response?.status === 404) {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECORDINGS] });
+          }
+          throw err;
+        }),
     enabled: !!recordingId,
     retry: false,
   });
