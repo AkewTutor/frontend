@@ -7,6 +7,16 @@ import { useCohortMaterials, useDeleteMaterial } from '@/hooks/useLibrary';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { formatDate } from '@/utils';
 import RecordingPlayer from '@/components/class-delivery/RecordingPlayer';
 import MaterialUploadForm from '@/components/class-delivery/MaterialUploadForm';
@@ -48,6 +58,7 @@ function LibraryContent() {
   const { mutate: deleteMaterial, isPending: deleting } = useDeleteMaterial();
 
   const [playingRecordingId, setPlayingRecordingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; title: string } | null>(null);
 
   if (cohortsLoading)
     return (
@@ -72,11 +83,10 @@ function LibraryContent() {
   const documents = materials.filter((m) => m.fileType !== 'VIDEO');
   const isTutor = user?.role === 'TUTOR';
 
-  const handleDelete = (id: string, title: string) => {
-    if (!cohortId) return;
-    if (!window.confirm('Delete "' + title + '"? Students will no longer see it.')) return;
+  const confirmDelete = () => {
+    if (!pendingDelete || !cohortId) return;
     deleteMaterial(
-      { id, cohortId },
+      { id: pendingDelete.id, cohortId },
       {
         onSuccess: () => toast.success('Deleted.'),
         onError: (err) =>
@@ -86,6 +96,7 @@ function LibraryContent() {
           ),
       }
     );
+    setPendingDelete(null);
   };
 
   const deleteButton = (id: string, title: string) =>
@@ -93,7 +104,7 @@ function LibraryContent() {
       <Button
         variant="secondary"
         disabled={deleting}
-        onClick={() => handleDelete(id, title)}
+        onClick={() => setPendingDelete({ id, title })}
         className="text-red-600"
       >
         Delete
@@ -230,6 +241,27 @@ function LibraryContent() {
           </div>
         </div>
       )}
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete ? '"' + pendingDelete.title + '"' : ''} will be removed from the
+              library and students will no longer see it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
