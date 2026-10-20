@@ -50,14 +50,14 @@ describe('useUploadMaterial', () => {
 
     const file = new File([''], 'test.pdf', { type: 'application/pdf' });
     await act(() =>
-      result.current.mutateAsync({ cohortId: 'c1', title: 'T1', fileType: 'PDF', file })
+      result.current.mutateAsync({ cohortId: 'c1', title: 'T1', file })
     );
 
     expect(post).toHaveBeenCalled();
     const formData = post.mock.calls[0][1] as FormData;
     expect(formData.get('cohortId')).toBe('c1');
     expect(formData.get('title')).toBe('T1');
-    expect(formData.get('fileType')).toBe('PDF');
+    expect(formData.get('fileType')).toBeNull();
     expect(formData.get('file')).toBe(file);
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, 'c1'] });
   });
