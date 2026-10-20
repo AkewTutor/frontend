@@ -54,6 +54,10 @@ function LibraryContent() {
   const filteredRecordings = (recordingsData?.recordings || []).filter(
     (r) => r.cohortId === cohortId
   );
+  const materials = materialsData?.materials || [];
+  const videos = materials.filter((m) => m.fileType === 'VIDEO');
+  const documents = materials.filter((m) => m.fileType !== 'VIDEO');
+  const isTutor = user?.role === 'TUTOR';
 
   return (
     <div className="flex flex-col gap-6 p-4">
@@ -71,35 +75,64 @@ function LibraryContent() {
         ))}
       </div>
 
-      {user?.role === 'TUTOR' && cohortId && <MaterialUploadForm cohortId={cohortId} />}
+      {isTutor && cohortId && <MaterialUploadForm cohortId={cohortId} />}
+
+      {(recordingsLoading || filteredRecordings.length > 0) && (
+        <div className="mt-4 flex flex-col gap-4">
+          <h2 className="text-xl font-semibold">Recordings</h2>
+          {recordingsLoading ? (
+            <p>Loading recordings...</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {filteredRecordings.map((rec) => (
+                <li key={rec.id} className="flex items-center justify-between rounded-md border p-4">
+                  <div>
+                    <p className="font-semibold">
+                      {rec.sessionNumber ? `Session ${rec.sessionNumber}` : 'Class recording'}
+                      {rec.sessionStart ? ` - ${formatDate(rec.sessionStart)}` : ''}
+                    </p>
+                    <p className="text-xs text-muted-foreground">ID: {rec.sessionId}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button onClick={() => setPlayingRecordingId(rec.id)}>Play</Button>
+                    {!rec.keepPermanently && (
+                      <Button
+                        variant="secondary"
+                        disabled={keeping}
+                        onClick={() => keepPermanently(rec.id)}
+                      >
+                        Keep permanently
+                      </Button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">Recordings</h2>
-        {recordingsLoading ? (
-          <p>Loading recordings...</p>
+        <h2 className="text-xl font-semibold">Videos</h2>
+        {materialsLoading ? (
+          <p>Loading videos...</p>
+        ) : videos.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {isTutor
+              ? 'No videos yet. Use the form above to add MP4, WebM or MOV files (up to 100 MB each). You can add as many as you like.'
+              : 'No videos yet.'}
+          </p>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {filteredRecordings.map((rec) => (
-              <li key={rec.id} className="flex items-center justify-between rounded-md border p-4">
-                <div>
-                  <p className="font-semibold">
-                    {rec.sessionNumber ? `Session ${rec.sessionNumber}` : 'Class recording'}
-                    {rec.sessionStart ? ` - ${formatDate(rec.sessionStart)}` : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground">ID: {rec.sessionId}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button onClick={() => setPlayingRecordingId(rec.id)}>Play</Button>
-                  {!rec.keepPermanently && (
-                    <Button
-                      variant="secondary"
-                      disabled={keeping}
-                      onClick={() => keepPermanently(rec.id)}
-                    >
-                      Keep permanently
-                    </Button>
-                  )}
-                </div>
+          <ul className="flex flex-col gap-4">
+            {videos.map((mat) => (
+              <li key={mat.id} className="flex flex-col gap-2 rounded-md border p-4">
+                <p className="font-semibold">{mat.title}</p>
+                <video
+                  controls
+                  preload="metadata"
+                  src={mat.fileUrl}
+                  className="w-full max-w-2xl rounded-md bg-black"
+                />
               </li>
             ))}
           </ul>
@@ -112,7 +145,7 @@ function LibraryContent() {
           <p>Loading materials...</p>
         ) : (
           <ul className="flex flex-col gap-2">
-            {(materialsData?.materials || []).map((mat) => (
+            {documents.map((mat) => (
               <li key={mat.id} className="flex items-center justify-between rounded-md border p-4">
                 <p className="font-semibold">
                   {mat.title} <StatusBadge status={mat.fileType} />
