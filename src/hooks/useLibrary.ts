@@ -10,6 +10,7 @@ export interface CohortMaterial {
   fileUrl: string;
   createdAt: string;
   downloadUrl?: string;
+  removedAt?: string | null;
 }
 
 export interface CohortMaterialsResponse {
