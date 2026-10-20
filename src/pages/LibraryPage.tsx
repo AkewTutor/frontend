@@ -1,14 +1,26 @@
 ﻿import { useState } from 'react';
+import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth.store';
 import { useMyCohorts } from '@/hooks/useCohort';
 import { useMyRecordings, useKeepPermanently } from '@/hooks/useRecordings';
-import { useCohortMaterials } from '@/hooks/useLibrary';
+import { useCohortMaterials, useDeleteMaterial } from '@/hooks/useLibrary';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils';
 import RecordingPlayer from '@/components/class-delivery/RecordingPlayer';
 import MaterialUploadForm from '@/components/class-delivery/MaterialUploadForm';
+
+const LINK_CLASS = 'rounded-md border px-3 py-1 text-sm hover:bg-accent';
+const VIEWABLE_EXT = ['pdf', 'jpg', 'jpeg', 'png', 'webp'];
+
+function extOf(url: string) {
+  try {
+    return new URL(url).pathname.split('.').pop()?.toLowerCase() ?? '';
+  } catch {
+    return '';
+  }
+}
 
 export default function LibraryPage() {
   const role = useAuthStore((s) => s.user?.role);
@@ -33,6 +45,7 @@ function LibraryContent() {
     cohortId || undefined
   );
   const { mutate: keepPermanently, isPending: keeping } = useKeepPermanently();
+  const { mutate: deleteMaterial, isPending: deleting } = useDeleteMaterial();
 
   const [playingRecordingId, setPlayingRecordingId] = useState<string | null>(null);
 
@@ -58,6 +71,34 @@ function LibraryContent() {
   const videos = materials.filter((m) => m.fileType === 'VIDEO');
   const documents = materials.filter((m) => m.fileType !== 'VIDEO');
   const isTutor = user?.role === 'TUTOR';
+
+  const handleDelete = (id: string, title: string) => {
+    if (!cohortId) return;
+    if (!window.confirm('Delete "' + title + '"? Students will no longer see it.')) return;
+    deleteMaterial(
+      { id, cohortId },
+      {
+        onSuccess: () => toast.success('Deleted.'),
+        onError: (err) =>
+          toast.error(
+            (err.response?.data as { message?: string } | undefined)?.message ??
+              'Delete failed. Please try again.'
+          ),
+      }
+    );
+  };
+
+  const deleteButton = (id: string, title: string) =>
+    isTutor ? (
+      <Button
+        variant="secondary"
+        disabled={deleting}
+        onClick={() => handleDelete(id, title)}
+        className="text-red-600"
+      >
+        Delete
+      </Button>
+    ) : null;
 
   return (
     <div className="flex flex-col gap-6 p-4">
@@ -133,6 +174,12 @@ function LibraryContent() {
                   src={mat.fileUrl}
                   className="w-full max-w-2xl rounded-md bg-black"
                 />
+                <div className="flex items-center gap-2">
+                  <a href={mat.downloadUrl ?? mat.fileUrl} className={LINK_CLASS}>
+                    Download video
+                  </a>
+                  {deleteButton(mat.id, mat.title)}
+                </div>
               </li>
             ))}
           </ul>
@@ -146,18 +193,24 @@ function LibraryContent() {
         ) : (
           <ul className="flex flex-col gap-2">
             {documents.map((mat) => (
-              <li key={mat.id} className="flex items-center justify-between rounded-md border p-4">
+              <li
+                key={mat.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-4"
+              >
                 <p className="font-semibold">
                   {mat.title} <StatusBadge status={mat.fileType} />
                 </p>
-                <a
-                  href={mat.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Download
-                </a>
+                <div className="flex items-center gap-2">
+                  {VIEWABLE_EXT.includes(extOf(mat.fileUrl)) && (
+                    <a href={mat.fileUrl} target="_blank" rel="noreferrer" className={LINK_CLASS}>
+                      Open
+                    </a>
+                  )}
+                  <a href={mat.downloadUrl ?? mat.fileUrl} className={LINK_CLASS}>
+                    Download
+                  </a>
+                  {deleteButton(mat.id, mat.title)}
+                </div>
               </li>
             ))}
           </ul>
