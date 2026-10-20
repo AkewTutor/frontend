@@ -9,6 +9,7 @@ export interface CohortMaterial {
   fileType: 'PDF' | 'NOTE' | 'BOOK';
   fileUrl: string;
   createdAt: string;
+  downloadUrl?: string;
 }
 
 export interface CohortMaterialsResponse {
@@ -80,6 +81,16 @@ export function useAdminOverrideMaterial() {
         .patch<AdminOverrideResponse>(`/admin/library/materials/${id}`, body)
         .then((r) => r.data);
     },
+    onSuccess: (_, { cohortId }) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, cohortId] });
+    },
+  });
+}
+
+export function useDeleteMaterial() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, AxiosError, { id: string; cohortId: string }>({
+    mutationFn: ({ id }) => api.delete(`/library/materials/${id}`).then((r) => r.data),
     onSuccess: (_, { cohortId }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, cohortId] });
     },
