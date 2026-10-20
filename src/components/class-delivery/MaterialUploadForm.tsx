@@ -80,7 +80,7 @@ export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
         <label htmlFor="file">File</label>
         <Input key={fileKey} id="file" type="file" accept={ACCEPT} onChange={handleFile} />
         <p className="text-xs text-muted-foreground">
-          Documents and images up to 10 MB. Videos (MP4, WebM, MOV) up to 100 MB. Add as many as you
+          PDF, DOC, DOCX and images (JPG, PNG, WEBP) up to 10 MB. Videos (MP4, WebM, MOV) up to 100 MB. Add as many as you
           like, one at a time.
         </p>
         {file && <p className="text-xs">Selected: {file.name}</p>}
