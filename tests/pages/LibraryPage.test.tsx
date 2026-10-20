@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import LibraryPage from '@/pages/LibraryPage';
 import { useAuthStore } from '@/store/auth.store';
@@ -13,6 +13,7 @@ vi.mock('@/hooks/useRecordings', () => ({
 vi.mock('@/hooks/useLibrary', () => ({
   useCohortMaterials: vi.fn(() => ({ data: { materials: [] }, isLoading: false })),
   useUploadMaterial: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDeleteMaterial: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 vi.mock('@/components/class-delivery/RecordingPlayer', () => ({
   default: () => <div data-testid="recording-player" />,
