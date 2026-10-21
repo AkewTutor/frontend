@@ -1,4 +1,4 @@
-﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { QUERY_KEYS } from '@/constants';
 import api from '@/lib/axios';
@@ -12,10 +12,6 @@ export interface MyRecordingsResponse {
 }
 
 export interface ComplianceQueueItem {
-  tutorName?: string | null;
-  tutorEmail?: string | null;
-  consentIncomplete?: boolean;
-  consentMissingCount?: number;
   tutorName?: string | null;
   tutorEmail?: string | null;
   consentIncomplete?: boolean;
