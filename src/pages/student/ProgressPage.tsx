@@ -25,7 +25,14 @@ export default function ProgressPage() {
 // Split to avoid calling hook after early return
 function StudentProgressView() {
   const { data, isLoading, error } = useMyCohorts();
-  const cohorts = (data as MyCohortLocal[] | undefined) || [];
+  const raw = data as unknown;
+  const list = Array.isArray(raw) ? raw : ((raw as { cohorts?: unknown[] } | undefined)?.cohorts ?? []);
+  const cohorts: MyCohortLocal[] = (list as Array<Record<string, unknown>>).map((c, i) => ({
+    id: String(c.id ?? c.cohortId),
+    name: (c.name as string | undefined) ?? 'Class ' + (i + 1),
+    subject: c.subject as string | undefined,
+    cohortMembershipId: String(c.cohortMembershipId),
+  }));
 
   const [selectedCohortId, setSelectedCohortId] = useState<string | null>(null);
 
