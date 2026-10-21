@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useCreateQuiz } from '@/hooks/useAssessmentQuiz';
+import { useCreateQuiz, useUpdateQuiz, type Quiz } from '@/hooks/useAssessmentQuiz';
 
 interface DraftOption {
   text: string;
@@ -20,14 +20,36 @@ export interface QuizBuilderProps {
   cohortId: string;
   defaultWeekStartDate: string;
   onCreated?: () => void;
+  editing?: Quiz; // edit mode when set
+  questionsLocked?: boolean; // true once a student has submitted
+  onDone?: () => void; // called after save or cancel in edit mode
 }
 
-export default function QuizBuilder({ cohortId, defaultWeekStartDate, onCreated }: QuizBuilderProps) {
-  const { mutate, isPending } = useCreateQuiz();
-  const [weekStartDate, setWeekStartDate] = useState(defaultWeekStartDate);
-  const [title, setTitle] = useState('');
-  const [instructions, setInstructions] = useState('');
-  const [questions, setQuestions] = useState<DraftQuestion[]>([emptyQuestion()]);
+export default function QuizBuilder({
+  cohortId,
+  defaultWeekStartDate,
+  onCreated,
+  editing,
+  questionsLocked = false,
+  onDone,
+}: QuizBuilderProps) {
+  const create = useCreateQuiz();
+  const update = useUpdateQuiz();
+  const isPending = create.isPending || update.isPending;
+
+  const [weekStartDate, setWeekStartDate] = useState(
+    editing ? editing.weekStartDate.slice(0, 10) : defaultWeekStartDate
+  );
+  const [title, setTitle] = useState(editing?.title ?? '');
+  const [instructions, setInstructions] = useState(editing?.instructions ?? '');
+  const [questions, setQuestions] = useState<DraftQuestion[]>(() =>
+    editing
+      ? editing.questions.map((q) => ({
+          text: q.text,
+          options: q.options.map((o) => ({ text: o.text, isCorrect: !!o.isCorrect })),
+        }))
+      : [emptyQuestion()]
+  );
 
   const updateQuestion = (qi: number, patch: Partial<DraftQuestion>) =>
     setQuestions((qs) => qs.map((q, i) => (i === qi ? { ...q, ...patch } : q)));
@@ -59,29 +81,49 @@ export default function QuizBuilder({ cohortId, defaultWeekStartDate, onCreated 
       )
     );
 
+  const questionsValid = questions.every(
+    (q) =>
+      q.text.trim() !== '' &&
+      q.options.every((o) => o.text.trim() !== '') &&
+      q.options.some((o) => o.isCorrect)
+  );
+
   const valid =
     instructions.trim() !== '' &&
     /^\d{4}-\d{2}-\d{2}$/.test(weekStartDate) &&
-    questions.every(
-      (q) =>
-        q.text.trim() !== '' &&
-        q.options.every((o) => o.text.trim() !== '') &&
-        q.options.some((o) => o.isCorrect)
-    );
+    (questionsLocked || questionsValid);
+
+  const cleanQuestions = () =>
+    questions.map((q) => ({
+      text: q.text.trim(),
+      options: q.options.map((o) => ({ text: o.text.trim(), isCorrect: o.isCorrect })),
+    }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!valid) return;
-    mutate(
+
+    if (editing) {
+      update.mutate(
+        {
+          quizId: editing.id,
+          cohortId,
+          title: title.trim(),
+          instructions: instructions.trim(),
+          questions: questionsLocked ? undefined : cleanQuestions(),
+        },
+        { onSuccess: () => onDone?.() }
+      );
+      return;
+    }
+
+    create.mutate(
       {
         cohortId,
         weekStartDate,
         title: title.trim() || undefined,
         instructions: instructions.trim(),
-        questions: questions.map((q) => ({
-          text: q.text.trim(),
-          options: q.options.map((o) => ({ text: o.text.trim(), isCorrect: o.isCorrect })),
-        })),
+        questions: cleanQuestions(),
       },
       {
         onSuccess: () => {
@@ -96,7 +138,9 @@ export default function QuizBuilder({ cohortId, defaultWeekStartDate, onCreated 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border p-4">
-      <h2 className="text-lg font-semibold">Create this week&apos;s quiz</h2>
+      <h2 className="text-lg font-semibold">
+        {editing ? 'Edit quiz' : "Create this week's quiz"}
+      </h2>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
@@ -107,13 +151,14 @@ export default function QuizBuilder({ cohortId, defaultWeekStartDate, onCreated 
             id="quiz-week"
             type="date"
             value={weekStartDate}
+            disabled={!!editing}
             onChange={(e) => setWeekStartDate(e.target.value)}
             className="mt-1 w-full rounded border p-2"
           />
         </div>
         <div>
           <label htmlFor="quiz-title" className="block text-sm font-medium">
-            Title (optional)
+            Title (optional, shared by all questions)
           </label>
           <input
             id="quiz-title"
@@ -139,74 +184,118 @@ export default function QuizBuilder({ cohortId, defaultWeekStartDate, onCreated 
         />
       </div>
 
-      <p className="text-sm text-gray-600">
-        Tick the box next to every correct answer. Students are scored automatically.
-      </p>
+      {questionsLocked ? (
+        <div className="space-y-2">
+          <p className="text-sm text-amber-700">
+            Questions are locked because students have already submitted. You can still change the
+            title and instructions.
+          </p>
+          {questions.map((q, qi) => (
+            <div key={qi}>
+              <p className="font-medium">
+                Question {qi + 1}: {q.text}
+              </p>
+              {q.options.map((o, oi) => (
+                <p key={oi} className="text-sm">
+                  {o.isCorrect ? '[x] ' : '[ ] '}
+                  {o.text}
+                </p>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          <p className="text-sm text-gray-600">
+            Tick the box next to every correct answer. Students are scored automatically.
+          </p>
 
-      {questions.map((q, qi) => (
-        <div key={qi} className="space-y-2 rounded border p-3">
-          <div className="flex items-center gap-2">
-            <input
-              aria-label={`Question ${qi + 1}`}
-              type="text"
-              value={q.text}
-              placeholder={`Question ${qi + 1}`}
-              onChange={(e) => updateQuestion(qi, { text: e.target.value })}
-              className="w-full rounded border p-2"
-            />
-            {questions.length > 1 && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setQuestions((qs) => qs.filter((_, i) => i !== qi))}
-              >
-                Remove
-              </Button>
-            )}
-          </div>
-          {q.options.map((o, oi) => (
-            <div key={oi} className="flex items-center gap-2">
+          {questions.map((q, qi) => (
+            <div key={qi} className="space-y-2 rounded border p-3">
+              <div className="flex items-center justify-between">
+                <p className="font-medium">Question {qi + 1}</p>
+                {questions.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuestions((qs) => qs.filter((_, i) => i !== qi))}
+                  >
+                    Remove question
+                  </Button>
+                )}
+              </div>
               <input
-                type="checkbox"
-                aria-label={`Question ${qi + 1} option ${oi + 1} is correct`}
-                checked={o.isCorrect}
-                onChange={(e) => updateOption(qi, oi, { isCorrect: e.target.checked })}
-              />
-              <input
-                aria-label={`Question ${qi + 1} option ${oi + 1}`}
+                aria-label={`Question ${qi + 1}`}
                 type="text"
-                value={o.text}
-                placeholder={`Option ${oi + 1}`}
-                onChange={(e) => updateOption(qi, oi, { text: e.target.value })}
+                value={q.text}
+                placeholder="Type the question"
+                onChange={(e) => updateQuestion(qi, { text: e.target.value })}
                 className="w-full rounded border p-2"
               />
-              {q.options.length > 2 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeOption(qi, oi)}>
-                  x
+              {q.options.map((o, oi) => (
+                <div key={oi} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    aria-label={`Question ${qi + 1} option ${oi + 1} is correct`}
+                    checked={o.isCorrect}
+                    onChange={(e) => updateOption(qi, oi, { isCorrect: e.target.checked })}
+                  />
+                  <input
+                    aria-label={`Question ${qi + 1} option ${oi + 1}`}
+                    type="text"
+                    value={o.text}
+                    placeholder={`Option ${oi + 1}`}
+                    onChange={(e) => updateOption(qi, oi, { text: e.target.value })}
+                    className="w-full rounded border p-2"
+                  />
+                  {q.options.length > 2 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeOption(qi, oi)}
+                    >
+                      x
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {q.options.length < 6 && (
+                <Button type="button" variant="secondary" size="sm" onClick={() => addOption(qi)}>
+                  Add option
                 </Button>
               )}
             </div>
           ))}
-          {q.options.length < 6 && (
-            <Button type="button" variant="secondary" size="sm" onClick={() => addOption(qi)}>
-              Add option
-            </Button>
-          )}
-        </div>
-      ))}
 
-      <div className="flex gap-2">
+          <div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={() => setQuestions((qs) => [...qs, emptyQuestion()])}
+            >
+              Add question
+            </Button>
+          </div>
+        </>
+      )}
+
+      <div className="flex gap-2 border-t pt-4">
+        {editing && (
+          <Button type="button" variant="ghost" size="md" onClick={() => onDone?.()}>
+            Cancel
+          </Button>
+        )}
         <Button
-          type="button"
-          variant="secondary"
+          type="submit"
+          variant="primary"
           size="md"
-          onClick={() => setQuestions((qs) => [...qs, emptyQuestion()])}
+          className="w-full"
+          disabled={!valid || isPending}
         >
-          Add question
-        </Button>
-        <Button type="submit" variant="primary" size="md" disabled={!valid || isPending}>
-          {isPending ? 'Creating...' : 'Create quiz'}
+          {isPending ? 'Saving...' : editing ? 'Save changes' : 'Create quiz'}
         </Button>
       </div>
     </form>
