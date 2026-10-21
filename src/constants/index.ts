@@ -57,6 +57,8 @@
   ADMIN_LIBRARY: '/admin/library', // ?cohortId=:id (query param)
   TUTOR_SESSION_MISSES: '/tutor/session-misses',
   ADMIN_SESSION_MISSES: '/admin/session-misses',
+  ADMIN_ASSESSMENT_HISTORY: '/admin/assessments',
+  PARENT_ASSESSMENT_HISTORY: '/parent/assessments',
 
   // â”€â”€ messaging â”€â”€
   MESSAGING: '/messaging',
