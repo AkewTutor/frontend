@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import type { ComponentType, LazyExoticComponent, ReactNode } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
@@ -41,7 +41,7 @@ const TutorProfileViewPage = lazy(() => import('@/pages/student/TutorProfileView
 const GroupFormatStatusPage = lazy(() => import('@/pages/student/GroupFormatStatusPage'));
 const FormatSwitchPage = lazy(() => import('@/pages/student/FormatSwitchPage'));
 const UpcomingClassesPage = lazy(() => import('@/pages/student/UpcomingClassesPage'));
-const ProgressPage = lazy(() => import('@/pages/student/ProgressPage'));
+const ProgressPage = lazy(() => import('@/pages/student/StudentQuizProgressPage'));
 const AchievementsPage = lazy(() => import('@/pages/student/AchievementsPage'));
 const LeaderboardPage = lazy(() => import('@/pages/student/LeaderboardPage'));
 const ChallengesPage = lazy(() => import('@/pages/student/ChallengesPage'));
@@ -56,7 +56,7 @@ const SubjectRankingPage = lazy(() => import('@/pages/tutor/SubjectRankingPage')
 const AvailabilityPage = lazy(() => import('@/pages/tutor/AvailabilityPage'));
 const ConductClassPage = lazy(() => import('@/pages/tutor/ConductClassPage'));
 const MyClassesPage = lazy(() => import('@/pages/tutor/MyClassesPage'));
-const WeeklyAssessmentPage = lazy(() => import('@/pages/tutor/WeeklyAssessmentPage'));
+const WeeklyAssessmentPage = lazy(() => import('@/pages/tutor/QuizAssessmentPage'));
 const TutorSessionMissesPage = lazy(() => import('@/pages/tutor/TutorSessionMissesPage'));
 const EarningsPage = lazy(() => import('@/pages/tutor/EarningsPage'));
 
