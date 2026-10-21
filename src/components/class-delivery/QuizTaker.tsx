@@ -34,6 +34,11 @@ export default function QuizTaker({ quiz, cohortId, canSubmit }: QuizTakerProps)
         {quiz.title || 'Weekly assessment'} - week of {quiz.weekStartDate.slice(0, 10)}
       </h2>
       <div className="whitespace-pre-wrap rounded bg-gray-50 p-3 text-sm">{quiz.instructions}</div>
+      {quiz.previousAttempts && quiz.previousAttempts.length > 0 && (
+        <p className="text-sm text-gray-600">
+          Earlier attempts: {quiz.previousAttempts.map((a) => `${a.score}/${a.total}`).join(', ')}
+        </p>
+      )}
 
       {attempt ? (
         <div className="space-y-3">
