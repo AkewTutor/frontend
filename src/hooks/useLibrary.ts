@@ -6,7 +6,7 @@ import api from '@/lib/axios';
 export interface CohortMaterial {
   id: string;
   title: string;
-  fileType: 'PDF' | 'NOTE' | 'BOOK';
+  fileType: 'PDF' | 'NOTE' | 'BOOK' | 'VIDEO';
   fileUrl: string;
   createdAt: string;
   downloadUrl?: string;
@@ -21,7 +21,7 @@ export interface UploadMaterialResponse {
   id: string;
   cohortId: string;
   title: string;
-  fileType: 'PDF' | 'NOTE' | 'BOOK';
+  fileType: 'PDF' | 'NOTE' | 'BOOK' | 'VIDEO';
   fileUrl: string;
 }
 
