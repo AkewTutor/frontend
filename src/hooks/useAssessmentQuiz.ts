@@ -112,8 +112,10 @@ export function useCreateQuiz() {
 export function useUpdateQuiz() {
   const queryClient = useQueryClient();
   return useMutation<Quiz, AxiosError, UpdateQuizPayload>({
-    mutationFn: ({ quizId, cohortId: _cohortId, ...body }) =>
-      api.patch<Quiz>(`/assessment-quizzes/${quizId}`, body).then((r) => r.data),
+    mutationFn: ({ quizId, title, instructions, questions }) =>
+      api
+        .patch<Quiz>(`/assessment-quizzes/${quizId}`, { title, instructions, questions })
+        .then((r) => r.data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: quizzesKey(variables.cohortId) });
       toast.success('Quiz updated.');
