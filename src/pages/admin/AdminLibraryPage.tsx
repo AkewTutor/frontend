@@ -65,7 +65,7 @@ export default function AdminLibraryPage() {
       <h1 className="text-2xl font-bold">Admin Override: Library Materials</h1>
       <ul className="flex flex-col gap-2">
         {data.materials.map((mat) => (
-          <li key={mat.id} className="flex items-center justify-between rounded-md border p-4">
+          <li key={mat.id} className={'flex items-center justify-between rounded-md border p-4' + (mat.removedAt ? ' opacity-60' : '')}>
             {editingId === mat.id ? (
               <div className="flex items-center gap-2">
                 <Input
@@ -85,10 +85,10 @@ export default function AdminLibraryPage() {
               </div>
             ) : (
               <>
-                <span className="font-semibold">{mat.title}</span>
+                <span className="font-semibold">{mat.title}{mat.removedAt && <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-xs font-normal text-red-700">Removed</span>}</span>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="secondary"
+                    variant="secondary" disabled={!!mat.removedAt}
                     onClick={() => {
                       setEditingId(mat.id);
                       setDraftTitle(mat.title);
@@ -98,7 +98,7 @@ export default function AdminLibraryPage() {
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive">Remove</Button>
+                      <Button variant="destructive" disabled={!!mat.removedAt}>Remove</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>

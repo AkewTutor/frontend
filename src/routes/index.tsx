@@ -11,7 +11,7 @@ import type { Role } from '@/types';
 import PublicLayout from '@/components/layouts/PublicLayout';
 import PaymentPauseGuard from '@/components/payments/PaymentPauseGuard';
 
-// ── shared / public / auth ──
+// â”€â”€ shared / public / auth â”€â”€
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const PolicyPage = lazy(() => import('@/pages/PolicyPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
@@ -33,7 +33,7 @@ const PaymentPausedPage = lazy(() => import('@/pages/PaymentPausedPage'));
 const SubmitComplaintPage = lazy(() => import('@/pages/SubmitComplaintPage'));
 const SupportContactPage = lazy(() => import('@/pages/SupportContactPage'));
 
-// ── student ──
+// â”€â”€ student â”€â”€
 const AcademicProfilePage = lazy(() => import('@/pages/student/AcademicProfilePage'));
 const FindTutorPage = lazy(() => import('@/pages/student/FindTutorPage'));
 const TutorRecommendationsPage = lazy(() => import('@/pages/student/TutorRecommendationsPage'));
@@ -41,25 +41,26 @@ const TutorProfileViewPage = lazy(() => import('@/pages/student/TutorProfileView
 const GroupFormatStatusPage = lazy(() => import('@/pages/student/GroupFormatStatusPage'));
 const FormatSwitchPage = lazy(() => import('@/pages/student/FormatSwitchPage'));
 const UpcomingClassesPage = lazy(() => import('@/pages/student/UpcomingClassesPage'));
-const ProgressPage = lazy(() => import('@/pages/student/ProgressPage'));
+const ProgressPage = lazy(() => import('@/pages/student/StudentQuizProgressPage'));
 const AchievementsPage = lazy(() => import('@/pages/student/AchievementsPage'));
 const LeaderboardPage = lazy(() => import('@/pages/student/LeaderboardPage'));
 const ChallengesPage = lazy(() => import('@/pages/student/ChallengesPage'));
 
-// ── parent ──
+// â”€â”€ parent â”€â”€
 const AddStudentPage = lazy(() => import('@/pages/parent/AddStudentPage'));
 const GuardianSettingsPage = lazy(() => import('@/pages/parent/GuardianSettingsPage'));
 
-// ── tutor ──
+// â”€â”€ tutor â”€â”€
 const TutorProfilePage = lazy(() => import('@/pages/tutor/TutorProfilePage'));
 const SubjectRankingPage = lazy(() => import('@/pages/tutor/SubjectRankingPage'));
 const AvailabilityPage = lazy(() => import('@/pages/tutor/AvailabilityPage'));
 const ConductClassPage = lazy(() => import('@/pages/tutor/ConductClassPage'));
-const WeeklyAssessmentPage = lazy(() => import('@/pages/tutor/WeeklyAssessmentPage'));
+const MyClassesPage = lazy(() => import('@/pages/tutor/MyClassesPage'));
+const WeeklyAssessmentPage = lazy(() => import('@/pages/tutor/QuizAssessmentPage'));
 const TutorSessionMissesPage = lazy(() => import('@/pages/tutor/TutorSessionMissesPage'));
 const EarningsPage = lazy(() => import('@/pages/tutor/EarningsPage'));
 
-// ── admin ──
+// â”€â”€ admin â”€â”€
 const AnnouncementsPage = lazy(() => import('@/pages/admin/AnnouncementsPage'));
 const PolicyManagementPage = lazy(() => import('@/pages/admin/PolicyManagementPage'));
 const TutorVerificationPage = lazy(() => import('@/pages/admin/TutorVerificationPage'));
@@ -70,8 +71,9 @@ const ManualAssignmentPage = lazy(() => import('@/pages/admin/ManualAssignmentPa
 const RecordingComplianceQueuePage = lazy(
   () => import('@/pages/admin/RecordingComplianceQueuePage')
 );
-const AdminLibraryPage = lazy(() => import('@/pages/admin/AdminLibraryPage'));
+const AdminLibraryPage = lazy(() => import('@/pages/admin/AdminLibraryHubPage'));
 const AdminSessionMissesPage = lazy(() => import('@/pages/admin/AdminSessionMissesPage'));
+const AssessmentHistoryPage = lazy(() => import('@/pages/AssessmentHistoryPage'));
 const MessageThreadReviewPage = lazy(() => import('@/pages/admin/MessageThreadReviewPage'));
 const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage'));
 const ChallengeManagementPage = lazy(() => import('@/pages/admin/ChallengeManagementPage'));
@@ -153,6 +155,7 @@ const router = createBrowserRouter([
       leaf(ROUTES.PARENT_HOME, RoleHomePage),
       leaf(ROUTES.PARENT_ADD_STUDENT, AddStudentPage),
       leaf(ROUTES.PARENT_GUARDIAN_SETTINGS, GuardianSettingsPage),
+      leaf(ROUTES.PARENT_ASSESSMENT_HISTORY, AssessmentHistoryPage),
     ]
   ),
 
@@ -189,6 +192,7 @@ const router = createBrowserRouter([
       leaf(ROUTES.TUTOR_PROFILE, TutorProfilePage),
       leaf(ROUTES.TUTOR_SUBJECTS, SubjectRankingPage),
       leaf(ROUTES.TUTOR_AVAILABILITY, AvailabilityPage),
+      leaf(ROUTES.TUTOR_MY_CLASSES, MyClassesPage),
       leaf(ROUTES.TUTOR_CONDUCT_CLASS, ConductClassPage),
       leaf(ROUTES.TUTOR_ASSESSMENTS, WeeklyAssessmentPage),
       leaf(ROUTES.TUTOR_SESSION_MISSES, TutorSessionMissesPage),
@@ -211,6 +215,7 @@ const router = createBrowserRouter([
       leaf(ROUTES.ADMIN_RECORDING_COMPLIANCE, RecordingComplianceQueuePage),
       leaf(ROUTES.ADMIN_LIBRARY, AdminLibraryPage),
       leaf(ROUTES.ADMIN_SESSION_MISSES, AdminSessionMissesPage),
+      leaf(ROUTES.ADMIN_ASSESSMENT_HISTORY, AssessmentHistoryPage),
       leaf(ROUTES.ADMIN_MESSAGE_THREAD, MessageThreadReviewPage),
       leaf(ROUTES.ADMIN_BADGES, BadgeManagementPage),
       leaf(ROUTES.ADMIN_CHALLENGES, ChallengeManagementPage),

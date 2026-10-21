@@ -6,9 +6,11 @@ import api from '@/lib/axios';
 export interface CohortMaterial {
   id: string;
   title: string;
-  fileType: 'PDF' | 'NOTE' | 'BOOK';
+  fileType: 'PDF' | 'NOTE' | 'BOOK' | 'VIDEO';
   fileUrl: string;
   createdAt: string;
+  downloadUrl?: string;
+  removedAt?: string | null;
 }
 
 export interface CohortMaterialsResponse {
@@ -19,7 +21,7 @@ export interface UploadMaterialResponse {
   id: string;
   cohortId: string;
   title: string;
-  fileType: 'PDF' | 'NOTE' | 'BOOK';
+  fileType: 'PDF' | 'NOTE' | 'BOOK' | 'VIDEO';
   fileUrl: string;
 }
 
@@ -44,15 +46,20 @@ export function useUploadMaterial() {
   return useMutation<
     UploadMaterialResponse,
     AxiosError,
-    { cohortId: string; title: string; fileType: 'PDF' | 'NOTE' | 'BOOK'; file: File }
+    { cohortId: string; title: string; file: File }
   >({
-    mutationFn: ({ cohortId, title, fileType, file }) => {
+    mutationFn: ({ cohortId, title, file }) => {
       const formData = new FormData();
       formData.append('cohortId', cohortId);
       formData.append('title', title);
-      formData.append('fileType', fileType);
+
       formData.append('file', file);
-      return api.post<UploadMaterialResponse>('/library/materials', formData).then((r) => r.data);
+      return api
+        .post<UploadMaterialResponse>('/library/materials', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 120000,
+        })
+        .then((r) => r.data);
     },
     onSuccess: (_, { cohortId }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, cohortId] });
@@ -78,5 +85,46 @@ export function useAdminOverrideMaterial() {
     onSuccess: (_, { cohortId }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, cohortId] });
     },
+  });
+}
+
+export function useDeleteMaterial() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, AxiosError, { id: string; cohortId: string }>({
+    mutationFn: ({ id }) => api.delete(`/library/materials/${id}`).then((r) => r.data),
+    onSuccess: (_, { cohortId }) => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, cohortId] });
+    },
+  });
+}
+
+export interface LibraryActivityUser {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+export interface LibraryActivityItem {
+  id: string;
+  title: string;
+  fileType: string;
+  cohortId: string;
+  createdAt: string;
+  removedAt: string | null;
+  fileUrl: string | null;
+  tutor: LibraryActivityUser | null;
+  students: LibraryActivityUser[];
+}
+
+export function useLibraryActivity(q: string) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.LIBRARY_MATERIALS, 'activity', q],
+    queryFn: () =>
+      api
+        .get<{ items: LibraryActivityItem[] }>('/admin/library/activity', {
+          params: q ? { q } : {},
+        })
+        .then((r) => r.data),
+    placeholderData: (prev) => prev,
   });
 }

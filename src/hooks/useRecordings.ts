@@ -12,6 +12,10 @@ export interface MyRecordingsResponse {
 }
 
 export interface ComplianceQueueItem {
+  tutorName?: string | null;
+  tutorEmail?: string | null;
+  consentIncomplete?: boolean;
+  consentMissingCount?: number;
   sessionId: string;
   cohortId: string;
   tutorId: string;
@@ -34,10 +38,19 @@ export function useMyRecordings(params?: { studentId?: string; page?: number; li
 }
 
 export function useSignedUrl(recordingId: string | null) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: [QUERY_KEYS.SIGNED_URL, recordingId],
     queryFn: () =>
-      api.get<{ url: string }>(`/recordings/${recordingId}/signed-url`).then((r) => r.data),
+      api
+        .get<{ signedUrl: string }>(`/recordings/${recordingId}/signed-url`)
+        .then((r) => ({ url: r.data.signedUrl }))
+        .catch((err: AxiosError) => {
+          if (err.response?.status === 404) {
+            queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.RECORDINGS] });
+          }
+          throw err;
+        }),
     enabled: !!recordingId,
     retry: false,
   });
@@ -59,7 +72,12 @@ export function useUploadRecording() {
       const formData = new FormData();
       formData.append('sessionId', sessionId);
       formData.append('file', file);
-      return api.post<{ recordingId: string }>('/recordings', formData).then((r) => r.data);
+      return api
+        .post<{ recordingId: string }>('/recordings', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 120000,
+        })
+        .then((r) => r.data);
     },
   });
 }

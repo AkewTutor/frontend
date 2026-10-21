@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+﻿import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createElement, type ReactNode } from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -45,7 +45,7 @@ describe('useSignedUrl', () => {
     expect(get).not.toHaveBeenCalled();
   });
 
-  it('retry: false is set — a 404 does not retry', async () => {
+  it('retry: false is set â€” a 404 does not retry', async () => {
     get.mockRejectedValue({ response: { status: 404 } });
     const { result } = renderHook(() => useSignedUrl('r1'), { wrapper: wrapper() });
 
@@ -112,5 +112,15 @@ describe('useComplianceQueue', () => {
     expect(get).toHaveBeenCalledWith('/admin/library/recording-compliance', {
       params: { page: 1, status: 'MISSING' },
     });
+  });
+});
+
+describe('useSignedUrl response mapping', () => {
+  it('maps the API signedUrl field to url for the player', async () => {
+    get.mockResolvedValue({ data: { signedUrl: 'https://s3/x.mp4?sig=1', expiresIn: 900 } });
+    const { result } = renderHook(() => useSignedUrl('r1'), { wrapper: wrapper() });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual({ url: 'https://s3/x.mp4?sig=1' });
   });
 });

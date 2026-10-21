@@ -1,27 +1,62 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useUploadMaterial } from '@/hooks/useLibrary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+
+const ACCEPT = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.mp4,.webm,.mov';
+const ALLOWED_EXT = /\.(pdf|doc|docx|jpe?g|png|webp|mp4|webm|mov)$/i;
+const VIDEO_EXT = /\.(mp4|webm|mov)$/i;
+const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
 export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
   const { mutate, isPending } = useUploadMaterial();
   const [title, setTitle] = useState('');
-  const [fileType, setFileType] = useState<'PDF' | 'NOTE' | 'BOOK'>('PDF');
   const [file, setFile] = useState<File | null>(null);
+  const [fileKey, setFileKey] = useState(0);
 
   const trimmedTitle = title.trim();
   const canSubmit = trimmedTitle.length > 0 && file !== null;
 
+  const reset = () => {
+    setFile(null);
+    setFileKey((k) => k + 1);
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const picked = e.target.files?.[0] || null;
+    if (picked && !ALLOWED_EXT.test(picked.name)) {
+      toast.error('Unsupported file type. Allowed: PDF, DOC, DOCX, JPG, PNG, WEBP, MP4, WEBM, MOV');
+      reset();
+      return;
+    }
+    if (picked) {
+      const isVideo = VIDEO_EXT.test(picked.name);
+      if (picked.size > (isVideo ? MAX_VIDEO_BYTES : MAX_BYTES)) {
+        toast.error(isVideo ? 'Video too large (max 100 MB)' : 'File too large (max 10 MB)');
+        reset();
+        return;
+      }
+    }
+    setFile(picked);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canSubmit) return;
+    if (!canSubmit || !file) return;
     mutate(
-      { cohortId, title: trimmedTitle, fileType, file },
+      { cohortId, title: trimmedTitle, file },
       {
+        onError: (err) =>
+          toast.error(
+            (err.response?.data as { message?: string } | undefined)?.message ??
+              'Upload failed. Please try again.'
+          ),
         onSuccess: () => {
+          toast.success('Uploaded.');
           setTitle('');
-          setFileType('PDF');
-          setFile(null);
+          reset();
         },
       }
     );
@@ -37,31 +72,22 @@ export default function MaterialUploadForm({ cohortId }: { cohortId: string }) {
           id="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Material title"
+          placeholder="Title (for example: Lesson 3 video)"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="fileType">Type</label>
-        <select
-          id="fileType"
-          value={fileType}
-          onChange={(e) => setFileType(e.target.value as 'PDF' | 'NOTE' | 'BOOK')}
-          className="rounded-md border px-3 py-2"
-        >
-          <option value="PDF">PDF</option>
-          <option value="NOTE">Note</option>
-          <option value="BOOK">Book</option>
-        </select>
-      </div>
-
-      <div className="flex flex-col gap-1">
         <label htmlFor="file">File</label>
-        <Input id="file" type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+        <Input key={fileKey} id="file" type="file" accept={ACCEPT} onChange={handleFile} />
+        <p className="text-xs text-muted-foreground">
+          PDF, DOC, DOCX and images (JPG, PNG, WEBP) up to 10 MB. Videos (MP4, WebM, MOV) up to 100 MB. Add as many as you
+          like, one at a time.
+        </p>
+        {file && <p className="text-xs">Selected: {file.name}</p>}
       </div>
 
       <Button type="submit" disabled={!canSubmit || isPending}>
-        Upload
+        {isPending ? 'Uploading...' : 'Upload'}
       </Button>
     </form>
   );

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+﻿import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSession, useProvideLink, useMarkCompleted } from '@/hooks/useSessions';
 import { useUploadRecording } from '@/hooks/useRecordings';
@@ -6,6 +6,7 @@ import RecordingIndicatorBanner from '@/components/class-delivery/RecordingIndic
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function ConductClassPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -84,7 +85,18 @@ export default function ConductClassPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (sessionId && file) uploadRecording({ sessionId, file });
+            if (sessionId && file)
+              uploadRecording(
+                { sessionId, file },
+                {
+                  onSuccess: () => toast.success('Recording uploaded.'),
+                  onError: (err) =>
+                    toast.error(
+                      (err.response?.data as { message?: string } | undefined)?.message ??
+                        'Upload failed. Please try again.'
+                    ),
+                }
+              );
           }}
           className="flex flex-col gap-2"
         >

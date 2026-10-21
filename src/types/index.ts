@@ -1,4 +1,4 @@
-// API response shape matching your backend's ApiResponse class
+﻿// API response shape matching your backend's ApiResponse class
 export interface ApiResponse<T> {
   statusCode: number;
   success: boolean;
@@ -20,7 +20,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-// ── shared-config ──────────────────────────────────────────
+// â”€â”€ shared-config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type Role = 'STUDENT' | 'PARENT' | 'TUTOR' | 'ADMIN';
 
 export interface AuthUser {
@@ -83,7 +83,7 @@ export interface Announcement {
   createdAt: string;
 }
 
-// ── accounts-guardianship ──────────────────────────────────
+// â”€â”€ accounts-guardianship â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface StudentProfile {
   id: string;
   userId: string;
@@ -142,7 +142,7 @@ export interface Subject {
   isActive: boolean;
 }
 
-// ── matching-cohorts ───────────────────────────────────────
+// â”€â”€ matching-cohorts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type CohortFormat = 'ONE_TO_ONE' | 'ONE_TO_THREE' | 'ONE_TO_FIVE';
 
 export interface TutorRecommendation {
@@ -222,7 +222,7 @@ export interface CohortMember {
   profilePictureUrl: string | null;
 }
 
-// ── class-delivery-library ─────────────────────────────────
+// â”€â”€ class-delivery-library â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type SessionStatus = 'SCHEDULED' | 'COMPLETED' | 'MISSED' | 'PAYMENT_PAUSE_RESCHEDULED';
 export type RecordingStatus = 'PENDING' | 'AVAILABLE' | 'MISSING' | 'ESCALATED';
 
@@ -250,6 +250,8 @@ export interface Recording {
   cohortId: string;
   keepPermanently: boolean;
   expiresAt: string | null; // null once keepPermanently is true
+  sessionNumber?: number | null; // position of the session within its cohort (1 = first)
+  sessionStart?: string | null;
   createdAt: string;
 }
 
@@ -325,7 +327,7 @@ export type RecordSessionMissResult =
       tutorEarningRateForOriginalSession: 'FULL';
     };
 
-// ── messaging ──────────────────────────────────────────────
+// â”€â”€ messaging â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface MessageThread {
   id: string;
   cohortId: string;
@@ -360,7 +362,7 @@ export interface AdminThreadView {
   total: number;
 }
 
-// ── gamification-engagement ────────────────────────────────
+// â”€â”€ gamification-engagement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export interface XPProgress {
   totalXP: number;
   streak: {
@@ -430,7 +432,7 @@ export interface AdminBadgesResponse {
   total: number;
 }
 
-// ── payments-earnings (money fields are Decimal-as-string) ──
+// â”€â”€ payments-earnings (money fields are Decimal-as-string) â”€â”€
 export interface InitiatedPayment {
   paymentId: string;
   chapaCheckoutUrl: string;
@@ -545,7 +547,7 @@ export interface CreatedPromotion {
   isActive: boolean;
 }
 
-// ── support-trust-admin ────────────────────────────────────
+// â”€â”€ support-trust-admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export type ComplaintCategory =
   'SESSION_ISSUE' | 'TUTOR_CONDUCT' | 'PAYMENT_ISSUE' | 'MESSAGE_ISSUE' | 'OTHER';
 export type ComplaintStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'DISMISSED';
@@ -635,7 +637,7 @@ export interface TutorPerformancePage {
   pagination?: Pagination;
 }
 
-// ── admin people (covers Dev A's useUsers; API 02 GET /admin/people) ──
+// â”€â”€ admin people (covers Dev A's useUsers; API 02 GET /admin/people) â”€â”€
 export type UserAccountStatus = 'ACTIVE' | 'SUSPENDED' | 'RESTRICTED';
 
 export interface AdminUser {
@@ -652,7 +654,7 @@ export interface AdminPeopleResponse {
   limit: number;
   total: number;
 }
-// ── admin tutor verification (API 02 GET /admin/tutors/pending) ──
+// â”€â”€ admin tutor verification (API 02 GET /admin/tutors/pending) â”€â”€
 export interface PendingTutor {
   id: string;
   userId: string;

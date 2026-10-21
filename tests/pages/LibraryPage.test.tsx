@@ -13,6 +13,7 @@ vi.mock('@/hooks/useRecordings', () => ({
 vi.mock('@/hooks/useLibrary', () => ({
   useCohortMaterials: vi.fn(() => ({ data: { materials: [] }, isLoading: false })),
   useUploadMaterial: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+  useDeleteMaterial: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 vi.mock('@/components/class-delivery/RecordingPlayer', () => ({
   default: () => <div data-testid="recording-player" />,
@@ -68,5 +69,31 @@ describe('LibraryPage', () => {
 
     render(<LibraryPage />);
     expect(screen.getByRole('button', { name: /Keep permanently/i })).toBeInTheDocument();
+  });
+  it('shows the session number and date, with the session id in small text', () => {
+    mockUseMyCohorts.mockReturnValue({
+      data: { cohorts: [{ cohortId: 'c1' }] },
+      isLoading: false,
+    } as never);
+    useAuthStore.setState({ user: { role: 'STUDENT', id: 's1' } as never });
+    mockUseMyRecordings.mockReturnValue({
+      data: {
+        recordings: [
+          {
+            id: 'r1',
+            sessionId: 'sess-abc',
+            cohortId: 'c1',
+            keepPermanently: false,
+            sessionNumber: 2,
+            sessionStart: '2026-10-26T12:00:00Z',
+          },
+        ],
+      },
+      isLoading: false,
+    } as never);
+
+    render(<LibraryPage />);
+    expect(screen.getByText('Session 2 - Oct 26, 2026')).toBeInTheDocument();
+    expect(screen.getByText('ID: sess-abc')).toBeInTheDocument();
   });
 });

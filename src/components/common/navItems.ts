@@ -1,4 +1,4 @@
-import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
+﻿import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import {
   faBell,
   faBook,
@@ -71,6 +71,7 @@ export const PARENT_NAV: NavItem[] = [
   { label: 'Home', to: ROUTES.PARENT_HOME, icon: faHouse, end: true },
   { label: 'Add student', to: ROUTES.PARENT_ADD_STUDENT, icon: faUserPlus },
   { label: 'Guardian settings', to: ROUTES.PARENT_GUARDIAN_SETTINGS, icon: faUserCheck },
+  { label: 'Assessments', to: ROUTES.PARENT_ASSESSMENT_HISTORY, icon: faClipboardList },
   { label: 'Payments', to: ROUTES.PAYMENTS, icon: faCreditCard, end: true },
   { label: 'Payment history', to: ROUTES.PAYMENT_HISTORY, icon: faReceipt },
   { label: 'Paused payments', to: ROUTES.PAYMENT_PAUSED, icon: faPause },
@@ -82,6 +83,7 @@ export const TUTOR_NAV: NavItem[] = [
   { label: 'Profile', to: ROUTES.TUTOR_PROFILE, icon: faUser },
   { label: 'Subjects', to: ROUTES.TUTOR_SUBJECTS, icon: faListCheck },
   { label: 'Availability', to: ROUTES.TUTOR_AVAILABILITY, icon: faClockRotateLeft },
+  { label: 'My classes', to: ROUTES.TUTOR_MY_CLASSES, icon: faCalendarDays },
   { label: 'Session misses', to: ROUTES.TUTOR_SESSION_MISSES, icon: faClipboardList },
   { label: 'Earnings', to: ROUTES.TUTOR_EARNINGS, icon: faMoneyBill },
   ...shared,
@@ -97,6 +99,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Recording compliance', to: ROUTES.ADMIN_RECORDING_COMPLIANCE, icon: faVideo },
   { label: 'Library', to: ROUTES.ADMIN_LIBRARY, icon: faFileLines },
   { label: 'Session misses', to: ROUTES.ADMIN_SESSION_MISSES, icon: faClipboardList },
+  { label: 'Assessments', to: ROUTES.ADMIN_ASSESSMENT_HISTORY, icon: faChartLine },
   { label: 'Badges', to: ROUTES.ADMIN_BADGES, icon: faMedal },
   { label: 'Challenges', to: ROUTES.ADMIN_CHALLENGES, icon: faBolt },
   { label: 'Pricing', to: ROUTES.ADMIN_PRICING, icon: faTag },
