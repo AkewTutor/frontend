@@ -73,6 +73,7 @@ const RecordingComplianceQueuePage = lazy(
 );
 const AdminLibraryPage = lazy(() => import('@/pages/admin/AdminLibraryHubPage'));
 const AdminSessionMissesPage = lazy(() => import('@/pages/admin/AdminSessionMissesPage'));
+const AssessmentHistoryPage = lazy(() => import('@/pages/AssessmentHistoryPage'));
 const MessageThreadReviewPage = lazy(() => import('@/pages/admin/MessageThreadReviewPage'));
 const BadgeManagementPage = lazy(() => import('@/pages/admin/BadgeManagementPage'));
 const ChallengeManagementPage = lazy(() => import('@/pages/admin/ChallengeManagementPage'));
@@ -154,6 +155,7 @@ const router = createBrowserRouter([
       leaf(ROUTES.PARENT_HOME, RoleHomePage),
       leaf(ROUTES.PARENT_ADD_STUDENT, AddStudentPage),
       leaf(ROUTES.PARENT_GUARDIAN_SETTINGS, GuardianSettingsPage),
+      leaf(ROUTES.PARENT_ASSESSMENT_HISTORY, AssessmentHistoryPage),
     ]
   ),
 
@@ -213,6 +215,7 @@ const router = createBrowserRouter([
       leaf(ROUTES.ADMIN_RECORDING_COMPLIANCE, RecordingComplianceQueuePage),
       leaf(ROUTES.ADMIN_LIBRARY, AdminLibraryPage),
       leaf(ROUTES.ADMIN_SESSION_MISSES, AdminSessionMissesPage),
+      leaf(ROUTES.ADMIN_ASSESSMENT_HISTORY, AssessmentHistoryPage),
       leaf(ROUTES.ADMIN_MESSAGE_THREAD, MessageThreadReviewPage),
       leaf(ROUTES.ADMIN_BADGES, BadgeManagementPage),
       leaf(ROUTES.ADMIN_CHALLENGES, ChallengeManagementPage),
