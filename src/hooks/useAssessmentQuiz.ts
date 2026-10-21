@@ -171,3 +171,33 @@ export function useSubmitAttempt() {
     },
   });
 }
+export interface AssessmentHistoryRow {
+  attemptId: string;
+  studentId: string;
+  studentName: string;
+  studentEmail: string | null;
+  tutorName: string;
+  tutorEmail: string | null;
+  cohortId: string;
+  quizId: string;
+  quizTitle: string | null;
+  weekStartDate: string;
+  quizDeleted: boolean;
+  score: number;
+  total: number;
+  submittedAt: string;
+  supersededAt: string | null;
+}
+
+// ADMIN (all students, optional search) and PARENT (linked children only).
+export function useAssessmentHistory(filters: { q?: string; studentId?: string } = {}) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.ASSESSMENTS, 'history', filters.q ?? '', filters.studentId ?? ''],
+    queryFn: () =>
+      api
+        .get<{ history: AssessmentHistoryRow[] }>('/assessment-quizzes/history', {
+          params: { q: filters.q || undefined, studentId: filters.studentId || undefined },
+        })
+        .then((r) => r.data),
+  });
+}
