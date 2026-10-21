@@ -84,8 +84,8 @@ export default function QuizBuilder({
   const questionsValid = questions.every(
     (q) =>
       q.text.trim() !== '' &&
-      q.options.every((o) => o.text.trim() !== '') &&
-      q.options.some((o) => o.isCorrect)
+      q.options.filter((o) => o.text.trim() !== '').length >= 2 &&
+      q.options.some((o) => o.isCorrect && o.text.trim() !== '')
   );
 
   const valid =
@@ -96,7 +96,9 @@ export default function QuizBuilder({
   const cleanQuestions = () =>
     questions.map((q) => ({
       text: q.text.trim(),
-      options: q.options.map((o) => ({ text: o.text.trim(), isCorrect: o.isCorrect })),
+      options: q.options
+        .filter((o) => o.text.trim() !== '')
+        .map((o) => ({ text: o.text.trim(), isCorrect: o.isCorrect })),
     }));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -282,6 +284,11 @@ export default function QuizBuilder({
         </>
       )}
 
+      {!valid && (
+        <p className="text-sm text-amber-700">
+          To enable the button: add instructions, and give every question its text, at least 2 filled options and one ticked correct answer.
+        </p>
+      )}
       <div className="flex gap-2 border-t pt-4">
         {editing && (
           <Button type="button" variant="ghost" size="md" onClick={() => onDone?.()}>
